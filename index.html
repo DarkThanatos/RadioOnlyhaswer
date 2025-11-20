@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Radio Only Haswer</title>
 <style>
+/* ... (El estilo CSS se mantiene igual por brevedad) ... */
 body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial;text-align:center;overflow-x:hidden;}
 .bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 20%, #1f1f1f, #000);animation:bgmove 12s infinite alternate;z-index:-1;}
 @keyframes bgmove{0%{background-position:0 0}100%{background-position:100px 200px}}
@@ -39,7 +40,7 @@ footer{margin:40px 0;color:#777;font-size:14px;}
     <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
     <audio id="audio" controls></audio>
     <canvas id="viz"></canvas>
-    <div id="meta" class="meta">Cargando metadata...</div>
+    <div id="meta" class="meta">▶ **Radio en Vivo**</div>
     <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
     <div class="social">
       <a href="#">🌐</a>
@@ -72,23 +73,23 @@ function show(id){
   document.getElementById(id).style.display='block';
 }
   
-// *** 1. CONFIGURACIÓN DE URL Y PROXIES ***
-// ** ¡CRÍTICO! Actualiza esta URL si reinicias ngrok. **
-const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
-const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
+// *** 1. CONFIGURACIÓN DE URL ***
+// ** Pega aquí la URL HTTPS que te dio ngrok para el stream actual**
+const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
 
-// ** AUDIO: Usa proxy para superar las restricciones CORS/Mixed Content **
+// ** AUDIO: Usa PROXY para garantizar el stream **
 const audio = document.getElementById("audio");
+// Usamos el proxy corsproxy.io que ha demostrado ser el más estable para el audio
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
+
+// Intentar reproducción automática (puede ser bloqueada por el navegador)
 audio.play().catch(()=>{
     console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
 });
 
-// ** METADATA: Usa proxy **
-const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(ICECAST_STATUS_URL);
-
 
 // --- 2. VISUALIZADOR DE AUDIO ---
+// Este código es necesario para el visualizador (canvas)
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 let src; 
 let analyser;
@@ -125,50 +126,12 @@ function drawViz(){
 }
 canvas.width=450;
 
+// *** 3. METADATA ELIMINADA ***
+// Se elimina la función loadMeta y el setInterval para evitar errores.
+document.getElementById("listeners").innerText= "⚠️ Metadata no se actualiza (Restricción de seguridad)";
 
-// --- 3. METADATA EN VIVO (Manejo de errores robusto) ---
-async function loadMeta(){
-  try{
-    // Paso 1: Obtener la respuesta del proxy
-    const r = await fetch(metaUrl);
-    if (!r.ok) throw new Error(`Error HTTP: ${r.status}`);
-    
-    let contents;
-    let rawContents;
-    
-    // Paso 2: Intentar parsear el contenido como JSON
-    try {
-        rawContents = await r.text(); 
-        contents = JSON.parse(rawContents);
-    } catch(e) {
-        // Si falla el parseo, el servidor devolvió un HTML de error (de ngrok o 404 de Icecast)
-        let preview = rawContents.substring(0, 50); 
-        console.error("Fallo al parsear JSON. Contenido crudo:", preview);
-        throw new Error(`Fallo de formato. Preview: ${preview}...`);
-    }
-    
-    // Paso 3: Extraer la información de Icecast
-    let srcData = contents.icestats.source;
-    if(Array.isArray(srcData)) {
-        srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
-    }
-    if(!srcData) srcData = {}; 
-
-    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
-    document.getElementById("listeners").innerText="👥 Oyentes: "+(srcData.listeners||0);
-
-  }catch(e){
-    // Muestra el mensaje de error específico en la consola y en el div 'listeners'
-    console.error("Error final en loadMeta:", e.message); 
-    document.getElementById("meta").innerText="Metadata no disponible (Error)";
-    document.getElementById("listeners").innerText="FALLO: " + e.message; 
-  }
-}
-loadMeta();
-setInterval(loadMeta,10000);
 </script>
 
 </body>
 </html>
-
 
