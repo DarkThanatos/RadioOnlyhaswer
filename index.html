@@ -76,15 +76,15 @@ function show(id){
   
 // *** 1. CONFIGURACIÓN DE URL Y AUDIO ***
 // ** 🚨 ¡CRÍTICO! Pega aquí la URL HTTPS que te dio ngrok para el stream actual**
-// const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
+const NGROK_BASE_URL = "https://[Pega-AQUI-Tu-URL-ACTIVA-de-ngrok]"; 
 
-// ** AUDIO: Usa PROXY corsproxy.io para garantizar el stream (Solución CORS)**
+// ** AUDIO: Conexión DIRECTA (sin proxy) **
 const audio = document.getElementById("audio");
-// Codificamos la URL para pasar por el proxy, resolviendo el problema MP3/ICY y CORS.
-audio.src = "https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3"; 
+// Pedimos la URL directamente a Ngrok, esperando que el navegador la acepte.
+audio.src = NGROK_BASE_URL + "/radio.mp3"; 
 
-// ** NO AUTOPLAY SOLICITADO **
-// Al no llamar a audio.play(), evitamos el autoplay y el usuario debe hacer clic en "Play".
+// NO AUTOPLAY SOLICITADO
+// La reproducción inicia solo al hacer clic en "Play".
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
@@ -106,7 +106,6 @@ function setupVisualizer() {
     }
 }
 
-// El visualizador se activa la primera vez que el usuario presiona "Play"
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
