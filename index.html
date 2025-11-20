@@ -78,7 +78,7 @@ function show(id){
 }
   
 // *** 1. CONFIGURACIÓN DE URL Y AUDIO ***
-// 🚨 CAMBIA ESTA URL: Usa la URL HTTPS activa que te dio LocalTunnel (lt --port 8000)
+// 🚨 RECUERDA: Cambia esta URL por tu LocalTunnel activo si el actual falla.
 const NGROK_BASE_URL = "https://only-haswer-radio.loca.lt"; 
 
 const audio = document.getElementById("audio");
@@ -88,7 +88,7 @@ const audioSource = document.getElementById("audio-source");
 audioSource.src = NGROK_BASE_URL + "/radio.mp3"; 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
-const ctx = new (window.AudioContext || window.webkitAudioContext)();
+let ctx; // DECLARACIÓN SIN INICIALIZAR
 let src; 
 let analyser;
 const canvas = document.getElementById("viz");
@@ -96,6 +96,11 @@ const c = canvas.getContext("2d");
 const buffer = new Uint8Array(256 / 2);
 
 function setupVisualizer() {
+    // 💥 CREACIÓN DEL CONTEXTO: SOLO AL CLIC DEL USUARIO
+    if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
     if (!src) { 
         src = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
@@ -106,7 +111,7 @@ function setupVisualizer() {
     }
 }
 
-// Inicia el visualizador al presionar Play
+// Inicia el visualizador al presionar Play (una sola vez)
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
