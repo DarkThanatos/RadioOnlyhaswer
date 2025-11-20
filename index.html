@@ -34,33 +34,30 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 <a onclick="show('info')">Info</a>
 </nav>
 
-<!-- RADIO -->
 <div id="radio" class="section" style="display:block">
-  <div class="player">
-    <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
-    <audio id="audio" controls></audio>
-    <canvas id="viz"></canvas>
-    <div id="meta" class="meta">Cargando metadata...</div>
-    <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
-    <div class="social">
-      <a href="#">🌐</a>
-      <a href="#">📘</a>
-      <a href="#">▶️</a>
-      <a href="#">📸</a>
-    </div>
-  </div>
+  <div class="player">
+    <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
+    <audio id="audio" controls></audio>
+    <canvas id="viz"></canvas>
+    <div id="meta" class="meta">Cargando metadata...</div>
+    <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
+    <div class="social">
+      <a href="#">🌐</a>
+      <a href="#">📘</a>
+      <a href="#">▶️</a>
+      <a href="#">📸</a>
+    </div>
+  </div>
 </div>
 
-<!-- CHAT -->
 <div id="chat" class="section">
-  <div class="section-title">💬 Chat en vivo</div>
-  <div class="chatbox">
-    <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
-            width="900" height="600"></iframe>
-  </div>
+  <div class="section-title">💬 Chat en vivo</div>
+  <div class="chatbox">
+    <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
+            width="900" height="600"></iframe>
+  </div>
 </div>
 
-<!-- INFO -->
 <div id="info" class="section">
 <h2>ℹ️ Información</h2>
 <p>Radio Only Haswer — Transmitiendo 24/7 con Icecast + BUTT.</p>
@@ -71,59 +68,105 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 
 <script>
 function show(id){
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  document.getElementById(id).style.display='block';
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
 }
 
-  
-const NGROK_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+// **CAMBIO IMPORTANTE: Usar la URL base de ngrok sin el proxy para la URL del stream de audio.**
+// El elemento <audio> es más permisivo con CORS para streams directos.
+// Mantener esta URL actualizada es CRÍTICO cada vez que reinicies ngrok, a menos que uses un dominio fijo.
+const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
 
-// AUDIO por proxy
+// **OPCIÓN A: Audio directo (Recomendado para ngrok + stream)**
+// El navegador debería ser capaz de reproducir el stream si ngrok funciona correctamente.
 const audio = document.getElementById("audio");
-audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_URL + "/radio.mp3");
-audio.play().catch(()=>{}); 
+audio.src = NGROK_BASE_URL + "/radio.mp3";
+audio.play().catch(()=>{});
 
-// METADATA por proxy
-const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(NGROK_URL + "/status-json.xsl");
+// **OPCIÓN B: Audio por proxy (si la Opción A falla)**
+// audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3");
+// audio.play().catch(()=>{});
 
-// Visualizador
+
+// **CAMBIO IMPORTANTE: Metadatos con un proxy más robusto o directo si es posible**
+// `corsproxy.io` a veces puede fallar para JSON. Usaremos la misma lógica de proxy,
+// pero si tienes problemas, considera cambiar a un proxy de tu propiedad.
+// La URL completa para la petición de metadatos DEBE ir en el parámetro del proxy.
+const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/status-json.xsl");
+
+// Visualizador (sin cambios)
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-const src = ctx.createMediaElementSource(audio);
-const analyser = ctx.createAnalyser();
-src.connect(analyser);
-analyser.connect(ctx.destination);
-analyser.fftSize = 256;
-const buffer = new Uint8Array(analyser.frequencyBinCount);
+// Se necesita que el audio inicie una vez que el usuario interactúa con la página
+// Por eso, la conexión al visualizador se hará dentro de la función de manejo de reproducción.
+let src; 
+let analyser;
+
+function setupVisualizer() {
+    if (!src) { // Configurar solo la primera vez
+        src = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser();
+        src.connect(analyser);
+        analyser.connect(ctx.destination);
+        analyser.fftSize = 256;
+        drawViz(); // Iniciar el dibujo después de la configuración
+    }
+}
+
+// Escuchar el evento de reproducción para configurar el visualizador
+// Esto ayuda con la política de autoplay del navegador (que requiere interacción)
+audio.addEventListener('play', setupVisualizer, { once: true });
+
+
+const buffer = new Uint8Array(analyser ? analyser.frequencyBinCount : 0); // Inicialización segura
 const canvas = document.getElementById("viz");
 const c = canvas.getContext("2d");
+
 function drawViz(){
-  requestAnimationFrame(drawViz);
-  analyser.getByteFrequencyData(buffer);
-  c.fillStyle="#111";
-  c.fillRect(0,0,canvas.width,canvas.height);
-  let barWidth=canvas.width/buffer.length;
-  for(let i=0;i<buffer.length;i++){
-    const h=buffer[i];
-    c.fillStyle="#4ade80";
-    c.fillRect(i*barWidth,canvas.height-h,barWidth-1,h);
-  }
+  requestAnimationFrame(drawViz);
+  if (!analyser) return; // Salir si el analizador no está configurado
+
+  analyser.getByteFrequencyData(buffer);
+  c.fillStyle="#111";
+  c.fillRect(0,0,canvas.width,canvas.height);
+  let barWidth=canvas.width/buffer.length;
+  for(let i=0;i<buffer.length;i++){
+    const h=buffer[i];
+    c.fillStyle="#4ade80";
+    c.fillRect(i*barWidth,canvas.height-h,barWidth-1,h);
+  }
 }
 canvas.width=450;
-drawViz();
+// No llamar a drawViz aquí, se llama dentro de setupVisualizer cuando el usuario interactúa.
 
-// Metadata en vivo
+// Metadata en vivo (sin cambios mayores en la lógica, solo para asegurar el async/await)
 async function loadMeta(){
-  try{
-    const r = await fetch(metaUrl);
-    const j = await r.json();
-    let srcData = j.icestats.source;
-    if(Array.isArray(srcData)) srcData = srcData.find(s=>s.listenurl.includes("radio.mp3"));
-    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
-    document.getElementById("listeners").innerText="👥 Oyentes: "+(srcData.listeners||0);
-  }catch(e){
-    document.getElementById("meta").innerText="Metadata no disponible";
-    document.getElementById("listeners").innerText="";
-  }
+  try{
+    // Usa fetch para la URL del proxy de metadatos
+    const r = await fetch(metaUrl);
+    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+
+    const j = await r.json();
+    
+    let srcData = j.icestats.source;
+
+    // Asegurar que 'srcData' es un objeto si solo hay una fuente.
+    if(Array.isArray(srcData)) {
+        // Busca la fuente correcta, que debe ser la que tiene "/radio.mp3"
+        srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
+    }
+    
+    // Si la fuente no se encuentra, usar un objeto vacío para evitar errores
+    if(!srcData) srcData = {}; 
+
+    // Revisa si 'title' existe y actualiza el texto
+    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
+    document.getElementById("listeners").innerText="👥 Oyentes: "+(srcData.listeners||0);
+
+  }catch(e){
+    console.error("Error al cargar metadata:", e);
+    document.getElementById("meta").innerText="Metadata no disponible (Error)";
+    document.getElementById("listeners").innerText="Revisar túnel ngrok/CORS";
+  }
 }
 loadMeta();
 setInterval(loadMeta,10000);
@@ -131,7 +174,6 @@ setInterval(loadMeta,10000);
 
 </body>
 </html>
-
 
 
 
