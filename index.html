@@ -73,19 +73,19 @@ function show(id){
 }
   
 // *** 1. CONFIGURACIÓN DE URL Y PROXIES ***
-// ** ¡CRÍTICO! Actualiza esta URL cada vez que reinicies ngrok. **
+// ** ¡CRÍTICO! Actualiza esta URL si reinicias ngrok. **
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
 const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
 
-// ** AUDIO: Usa proxy para superar las restricciones CORS/Mixed Content en GitHub Pages **
+// ** AUDIO: Usa proxy para superar las restricciones CORS/Mixed Content **
 const audio = document.getElementById("audio");
-audio.src = "https://cors-anywhere.herokuapp.com/" + NGROK_BASE_URL + "/radio.mp3";
+audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
 audio.play().catch(()=>{
     console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
 });
 
-// ** METADATA: Usa proxy para la solicitud de metadatos **
-const metaUrl = "https://cors-anywhere.herokuapp.com/" + ICECAST_STATUS_URL; // ¡NO USAMOS encodeURIComponent aquí!
+// ** METADATA: Usa proxy **
+const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(ICECAST_STATUS_URL);
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
@@ -97,7 +97,6 @@ const c = canvas.getContext("2d");
 const buffer = new Uint8Array(256 / 2);
 
 function setupVisualizer() {
-    // Configurar el visualizador solo la primera vez que el usuario interactúa
     if (!src) { 
         src = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
@@ -108,7 +107,6 @@ function setupVisualizer() {
     }
 }
 
-// Escucha el evento 'play' (interacción del usuario) para activar el visualizador
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
@@ -152,7 +150,6 @@ async function loadMeta(){
     // Paso 3: Extraer la información de Icecast
     let srcData = contents.icestats.source;
     if(Array.isArray(srcData)) {
-        // Busca el punto de montaje correcto
         srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
     }
     if(!srcData) srcData = {}; 
