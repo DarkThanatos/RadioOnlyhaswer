@@ -79,13 +79,13 @@ const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
 
 // ** AUDIO: Usa proxy para superar las restricciones CORS/Mixed Content en GitHub Pages **
 const audio = document.getElementById("audio");
-audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
+audio.src = "https://cors-anywhere.herokuapp.com/" + NGROK_BASE_URL + "/radio.mp3";
 audio.play().catch(()=>{
     console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
 });
 
 // ** METADATA: Usa proxy para la solicitud de metadatos **
-const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(ICECAST_STATUS_URL);
+const metaUrl = "https://cors-anywhere.herokuapp.com/" + ICECAST_STATUS_URL; // ¡NO USAMOS encodeURIComponent aquí!
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
