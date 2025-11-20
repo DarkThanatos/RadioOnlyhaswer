@@ -71,21 +71,18 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
-}
-  
+    
+<script>
 // *** 1. CONFIGURACIÓN DE URL ***
-// ** Pega aquí la URL HTTPS que te dio ngrok para el stream actual**
+// ** ¡Pega AQUÍ la URL HTTPS ACTIVA de tu ngrok! **
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
 
 // ** AUDIO: Usa PROXY para garantizar el stream **
 const audio = document.getElementById("audio");
-// Usamos el proxy corsproxy.io que ha demostrado ser el más estable para el audio
+// Esta línea es la única que importa para el audio
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
-
-// Intentar reproducción automática (puede ser bloqueada por el navegador)
-audio.play().catch(()=>{
-    console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
-});
+// ... (resto del código) ... 
+</script>
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
