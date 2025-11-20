@@ -121,10 +121,11 @@
   <div class="player">
     <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
 
-  <audio controls>
-  <source src="https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3" type="audio/mpeg">
-  Tu navegador no soporta reproducción de audio.
-</audio>
+    <!-- Audio con ID para el visualizador -->
+    <audio id="audio" controls>
+      <source src="https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3" type="audio/mpeg">
+      Tu navegador no soporta reproducción de audio.
+    </audio>
 
     <canvas id="viz"></canvas>
 
@@ -166,7 +167,7 @@
 
   /* Visualizador básico */
   const audio = document.getElementById("audio");
-  const ctx = new AudioContext();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const src = ctx.createMediaElementSource(audio);
   const analyser = ctx.createAnalyser();
   src.connect(analyser);
@@ -191,23 +192,13 @@
   canvas.width = 450;
   drawViz();
 
-  /* Metadata */
-  async function loadMeta(){
-    try{
-      const r = await fetch("http://radioonlyhaswer.ddns.net:8069/status-json.xsl");
-      const j = await r.json();
-      let src = j.icestats.source;
-      if(Array.isArray(src)) src = src.find(s=>s.listenurl.includes("radio.mp3"));
+  /* Metadata temporal - evita bloqueos HTTPS */
+  document.getElementById("meta").innerText = "▶ Transmitiendo en vivo";
+  document.getElementById("listeners").innerText = "👥 Oyentes: Desconocido";
 
-      document.getElementById("meta").innerText = "▶ " + (src.title || "Sin metadata");
-      document.getElementById("listeners").innerText = "👥 Oyentes: " + (src.listeners || 0);
-    }catch(e){
-      document.getElementById("meta").innerText = "Metadata no disponible";
-    }
-  }
-  loadMeta();
-  setInterval(loadMeta, 8000);
 </script>
 
 </body>
 </html>
+
+
