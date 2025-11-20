@@ -71,59 +71,46 @@ function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
 }
-
-// **CAMBIO IMPORTANTE: Usar la URL base de ngrok sin el proxy para la URL del stream de audio.**
-// El elemento <audio> es más permisivo con CORS para streams directos.
-// Mantener esta URL actualizada es CRÍTICO cada vez que reinicies ngrok, a menos que uses un dominio fijo.
+  
+// *** 1. CONFIGURACIÓN DE URL ***
+// Asegúrate de actualizar esta URL cada vez que reinicies ngrok.
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
 
-// **OPCIÓN A: Audio directo (Recomendado para ngrok + stream)**
-// El navegador debería ser capaz de reproducir el stream si ngrok funciona correctamente.
+// ** AUDIO: Acceso directo (funciona mejor para streams) **
 const audio = document.getElementById("audio");
-audio.src = NGROK_BASE_URL + "/radio.mp3";
+audio.src = NGROK_BASE_URL + "/radio.mp3"; 
 audio.play().catch(()=>{});
 
-// **OPCIÓN B: Audio por proxy (si la Opción A falla)**
-// audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3");
-// audio.play().catch(()=>{});
+// ** METADATA: Usando AllOrigins Proxy para evitar CORS **
+// Este proxy es más robusto que corsproxy.io
+const metaUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(ICECAST_STATUS_URL);
 
 
-// **CAMBIO IMPORTANTE: Metadatos con un proxy más robusto o directo si es posible**
-// `corsproxy.io` a veces puede fallar para JSON. Usaremos la misma lógica de proxy,
-// pero si tienes problemas, considera cambiar a un proxy de tu propiedad.
-// La URL completa para la petición de metadatos DEBE ir en el parámetro del proxy.
-const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/status-json.xsl");
-
-// Visualizador (sin cambios)
+// *** 2. VISUALIZADOR (Corregido para Autoplay Policy) ***
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-// Se necesita que el audio inicie una vez que el usuario interactúa con la página
-// Por eso, la conexión al visualizador se hará dentro de la función de manejo de reproducción.
 let src; 
 let analyser;
+const canvas = document.getElementById("viz");
+const c = canvas.getContext("2d");
+const buffer = new Uint8Array(256 / 2); // 128 (default)
 
 function setupVisualizer() {
-    if (!src) { // Configurar solo la primera vez
+    if (!src) { 
         src = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
         src.connect(analyser);
         analyser.connect(ctx.destination);
         analyser.fftSize = 256;
-        drawViz(); // Iniciar el dibujo después de la configuración
+        drawViz(); 
     }
 }
 
-// Escuchar el evento de reproducción para configurar el visualizador
-// Esto ayuda con la política de autoplay del navegador (que requiere interacción)
 audio.addEventListener('play', setupVisualizer, { once: true });
-
-
-const buffer = new Uint8Array(analyser ? analyser.frequencyBinCount : 0); // Inicialización segura
-const canvas = document.getElementById("viz");
-const c = canvas.getContext("2d");
 
 function drawViz(){
   requestAnimationFrame(drawViz);
-  if (!analyser) return; // Salir si el analizador no está configurado
+  if (!analyser) return; 
 
   analyser.getByteFrequencyData(buffer);
   c.fillStyle="#111";
@@ -136,36 +123,49 @@ function drawViz(){
   }
 }
 canvas.width=450;
-// No llamar a drawViz aquí, se llama dentro de setupVisualizer cuando el usuario interactúa.
 
-// Metadata en vivo (sin cambios mayores en la lógica, solo para asegurar el async/await)
+
+// *** 3. METADATA EN VIVO (Manejo de errores mejorado) ***
 async function loadMeta(){
   try{
-    // Usa fetch para la URL del proxy de metadatos
+    // Paso 1: Obtener la respuesta del proxy AllOrigins
     const r = await fetch(metaUrl);
-    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+    if (!r.ok) throw new Error(`Error HTTP: ${r.status}`);
 
-    const j = await r.json();
+    const proxyResponse = await r.json();
+    
+    // Paso 2: Verificar errores del proxy o de ngrok
+    if (proxyResponse.status && proxyResponse.status.http_code !== 200) {
+        throw new Error(`Error en el túnel ngrok/Icecast (código: ${proxyResponse.status.http_code})`);
+    }
+
+    // Paso 3: Intentar parsear el contenido de Icecast
+    let contents;
+    try {
+        // El contenido de Icecast viene como un string dentro de 'contents'
+        contents = JSON.parse(proxyResponse.contents);
+    } catch(e) {
+        console.error("Fallo al parsear JSON:", proxyResponse.contents);
+        // Si no se puede parsear, probablemente Icecast devolvió un XML o texto de error
+        throw new Error("Icecast no devolvió JSON válido. (¿Es XML?)");
+    }
     
-    let srcData = j.icestats.source;
-
-    // Asegurar que 'srcData' es un objeto si solo hay una fuente.
+    // Paso 4: Extraer la información
+    let srcData = contents.icestats.source;
     if(Array.isArray(srcData)) {
-        // Busca la fuente correcta, que debe ser la que tiene "/radio.mp3"
+        // Busca el punto de montaje correcto
         srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
     }
-    
-    // Si la fuente no se encuentra, usar un objeto vacío para evitar errores
     if(!srcData) srcData = {}; 
 
-    // Revisa si 'title' existe y actualiza el texto
-    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
+    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
     document.getElementById("listeners").innerText="👥 Oyentes: "+(srcData.listeners||0);
 
   }catch(e){
-    console.error("Error al cargar metadata:", e);
+    // Muestra el mensaje de error específico en la consola y en el div 'listeners'
+    console.error("Error al cargar metadata:", e.message); 
     document.getElementById("meta").innerText="Metadata no disponible (Error)";
-    document.getElementById("listeners").innerText="Revisar túnel ngrok/CORS";
+    document.getElementById("listeners").innerText="FALLO: " + e.message; 
   }
 }
 loadMeta();
@@ -174,7 +174,6 @@ setInterval(loadMeta,10000);
 
 </body>
 </html>
-
 
 
 
