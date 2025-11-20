@@ -75,7 +75,7 @@ function show(id){
 // *** 1. CONFIGURACIÓN DE URL ***
 // Asegúrate de actualizar esta URL cada vez que reinicies ngrok.
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
-const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
+const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(ICECAST_STATUS_URL);
 
 // ** AUDIO: Acceso directo (funciona mejor para streams) **
 const audio = document.getElementById("audio");
