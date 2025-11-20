@@ -72,30 +72,32 @@ function show(id){
   document.getElementById(id).style.display='block';
 }
   
-// *** 1. CONFIGURACIÓN DE URL ***
-// Asegúrate de actualizar esta URL cada vez que reinicies ngrok.
+// *** 1. CONFIGURACIÓN DE URL Y PROXIES ***
+// ** ¡CRÍTICO! Actualiza esta URL cada vez que reinicies ngrok. **
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+const ICECAST_STATUS_URL = NGROK_BASE_URL + "/status-json.xsl";
+
+// ** AUDIO: Usa proxy para superar las restricciones CORS/Mixed Content en GitHub Pages **
+const audio = document.getElementById("audio");
+audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
+audio.play().catch(()=>{
+    console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
+});
+
+// ** METADATA: Usa proxy para la solicitud de metadatos **
 const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(ICECAST_STATUS_URL);
 
-// ** AUDIO: Acceso directo (funciona mejor para streams) **
-const audio = document.getElementById("audio");
-audio.src = NGROK_BASE_URL + "/radio.mp3"; 
-audio.play().catch(()=>{});
 
-// ** METADATA: Usando AllOrigins Proxy para evitar CORS **
-// Este proxy es más robusto que corsproxy.io
-const metaUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(ICECAST_STATUS_URL);
-
-
-// *** 2. VISUALIZADOR (Corregido para Autoplay Policy) ***
+// --- 2. VISUALIZADOR DE AUDIO ---
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 let src; 
 let analyser;
 const canvas = document.getElementById("viz");
 const c = canvas.getContext("2d");
-const buffer = new Uint8Array(256 / 2); // 128 (default)
+const buffer = new Uint8Array(256 / 2);
 
 function setupVisualizer() {
+    // Configurar el visualizador solo la primera vez que el usuario interactúa
     if (!src) { 
         src = ctx.createMediaElementSource(audio);
         analyser = ctx.createAnalyser();
@@ -106,6 +108,7 @@ function setupVisualizer() {
     }
 }
 
+// Escucha el evento 'play' (interacción del usuario) para activar el visualizador
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
@@ -125,36 +128,31 @@ function drawViz(){
 canvas.width=450;
 
 
-// *** 3. METADATA EN VIVO (Manejo de errores para diagnóstico) ***
+// --- 3. METADATA EN VIVO (Manejo de errores robusto) ---
 async function loadMeta(){
   try{
-    // Utilizamos la URL de AllOrigins ya definida: const metaUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(ICECAST_STATUS_URL);
-    
+    // Paso 1: Obtener la respuesta del proxy
     const r = await fetch(metaUrl);
     if (!r.ok) throw new Error(`Error HTTP: ${r.status}`);
-
-    const proxyResponse = await r.json();
-    let rawContents = proxyResponse.contents; // El contenido crudo de Icecast
-    
-    // 1. Verificar si AllOrigins devolvió la data esperada
-    if (!rawContents) {
-        throw new Error("El proxy no pudo obtener datos.");
-    }
-    
-    // 2. Intentar parsear el contenido de Icecast
+    
     let contents;
+    let rawContents;
+    
+    // Paso 2: Intentar parsear el contenido como JSON
     try {
+        rawContents = await r.text(); 
         contents = JSON.parse(rawContents);
     } catch(e) {
-        // En caso de fallo, mostramos los primeros 50 caracteres
+        // Si falla el parseo, el servidor devolvió un HTML de error (de ngrok o 404 de Icecast)
         let preview = rawContents.substring(0, 50); 
         console.error("Fallo al parsear JSON. Contenido crudo:", preview);
         throw new Error(`Fallo de formato. Preview: ${preview}...`);
     }
     
-    // 3. Extraer la información (solo si el parseo fue exitoso)
+    // Paso 3: Extraer la información de Icecast
     let srcData = contents.icestats.source;
     if(Array.isArray(srcData)) {
+        // Busca el punto de montaje correcto
         srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
     }
     if(!srcData) srcData = {}; 
@@ -175,6 +173,5 @@ setInterval(loadMeta,10000);
 
 </body>
 </html>
-
 
 
