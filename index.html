@@ -79,9 +79,9 @@ function show(id){
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
 
 // ** AUDIO: Conexión DIRECTA (sin proxy) **
-const audio = document.getElementById("audio");
+const video = document.getElementById("audio");
 // Pedimos la URL directamente a Ngrok, esperando que el navegador la acepte.
-audio.src = NGROK_BASE_URL + "/radio.mp3"; 
+video.src = NGROK_BASE_URL + "/radio.mp3"; 
 
 // NO AUTOPLAY SOLICITADO
 // La reproducción inicia solo al hacer clic en "Play".
