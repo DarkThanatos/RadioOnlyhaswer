@@ -79,7 +79,7 @@ function show(id){
   
 // *** 1. CONFIGURACIÓN DE URL Y AUDIO ***
 // 🚨 CAMBIA ESTA URL: Usa la URL HTTPS activa que te dio LocalTunnel (lt --port 8000)
-const NGROK_BASE_URL = "https://sweet-cycles-go.loca.lt"; 
+const NGROK_BASE_URL = "https://only-haswer-radio.loca.lt"; 
 
 const audio = document.getElementById("audio");
 const audioSource = document.getElementById("audio-source"); 
@@ -141,4 +141,17 @@ async function loadMeta(){
         document.getElementById("meta").innerText = "🎶 " + (src.title || "Radio en Vivo");
         document.getElementById("listeners").innerText = "👥 Oyentes: " + (src.listeners || 0);
 
-    } catch
+    } catch(e){
+        document.getElementById("meta").innerText = "▶ Radio en Vivo (Metadata no disponible)";
+        document.getElementById("listeners").innerText = "⚠️ Error de conexión";
+    }
+}
+
+// Carga la metadata inmediatamente y luego cada 10 segundos
+loadMeta();
+setInterval(loadMeta, 10000); 
+
+</script>
+
+</body>
+</html>
