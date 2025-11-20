@@ -77,18 +77,19 @@ function show(id){
 // Ejemplo: "https://oblanceolate-preapply-oneida.ngrok-free.dev"
 const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
 
-// ** AUDIO: Usa PROXY para garantizar el stream **
+// ** AUDIO: Usa PROXY corsproxy.io para garantizar el stream **
 const audio = document.getElementById("audio");
-// Usamos el proxy corsproxy.io, el más estable para el audio
+// Esto es lo que permite que el audio cruce las barreras de seguridad (CORS)
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
 
-// Intentar reproducción automática (puede ser bloqueada)
+// Intentar reproducción automática 
 audio.play().catch(()=>{
     console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
 });
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
+// Este código es necesario para que la barra visual (Canvas) funcione.
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 let src; 
 let analyser;
@@ -107,6 +108,7 @@ function setupVisualizer() {
     }
 }
 
+// El visualizador solo se activa si el usuario presiona "Play"
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
@@ -125,8 +127,8 @@ function drawViz(){
 }
 canvas.width=450;
 
-// *** 3. METADATA ELIMINADA ***
-// Eliminamos el código de metadatos para evitar errores CORS y el mensaje de error de ngrok
+// *** 3. METADATA DESHABILITADA ***
+// Se eliminó la función de metadatos para evitar errores CORS.
 document.getElementById("meta").innerText = "▶ Radio en Vivo";
 document.getElementById("listeners").innerText= "⚠️ Metadata no se actualiza (Restricción de seguridad)";
 
