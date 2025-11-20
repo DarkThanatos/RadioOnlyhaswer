@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Radio Only Haswer</title>
 <style>
-/* ... (El estilo CSS se mantiene igual por brevedad) ... */
 body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial;text-align:center;overflow-x:hidden;}
 .bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 20%, #1f1f1f, #000);animation:bgmove 12s infinite alternate;z-index:-1;}
 @keyframes bgmove{0%{background-position:0 0}100%{background-position:100px 200px}}
@@ -71,64 +70,28 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
-    
-<script>
+}
+  
 // *** 1. CONFIGURACIÓN DE URL ***
-// ** ¡Pega AQUÍ la URL HTTPS ACTIVA de tu ngrok! **
-const NGROK_BASE_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev"; 
+// ** 🚨 ¡CRÍTICO! Pega aquí la URL HTTPS que te dio ngrok para el stream actual**
+// Ejemplo: "https://oblanceolate-preapply-oneida.ngrok-free.dev"
+const NGROK_BASE_URL = "https://[Pega-AQUI-Tu-URL-ACTIVA-de-ngrok]"; 
 
 // ** AUDIO: Usa PROXY para garantizar el stream **
 const audio = document.getElementById("audio");
-// Esta línea es la única que importa para el audio
+// Usamos el proxy corsproxy.io, el más estable para el audio
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_BASE_URL + "/radio.mp3"); 
-// ... (resto del código) ... 
-</script>
+
+// Intentar reproducción automática (puede ser bloqueada)
+audio.play().catch(()=>{
+    console.warn("Autoplay bloqueado. El usuario debe hacer clic en 'Play'.");
+});
 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
-// Este código es necesario para el visualizador (canvas)
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 let src; 
 let analyser;
 const canvas = document.getElementById("viz");
-const c = canvas.getContext("2d");
-const buffer = new Uint8Array(256 / 2);
-
-function setupVisualizer() {
-    if (!src) { 
-        src = ctx.createMediaElementSource(audio);
-        analyser = ctx.createAnalyser();
-        src.connect(analyser);
-        analyser.connect(ctx.destination);
-        analyser.fftSize = 256;
-        drawViz(); 
-    }
-}
-
-audio.addEventListener('play', setupVisualizer, { once: true });
-
-function drawViz(){
-  requestAnimationFrame(drawViz);
-  if (!analyser) return; 
-
-  analyser.getByteFrequencyData(buffer);
-  c.fillStyle="#111";
-  c.fillRect(0,0,canvas.width,canvas.height);
-  let barWidth=canvas.width/buffer.length;
-  for(let i=0;i<buffer.length;i++){
-    const h=buffer[i];
-    c.fillStyle="#4ade80";
-    c.fillRect(i*barWidth,canvas.height-h,barWidth-1,h);
-  }
-}
-canvas.width=450;
-
-// *** 3. METADATA ELIMINADA ***
-// Se elimina la función loadMeta y el setInterval para evitar errores.
-document.getElementById("listeners").innerText= "⚠️ Metadata no se actualiza (Restricción de seguridad)";
-
-</script>
-
-</body>
-</html>
+const c = canvas.
 
