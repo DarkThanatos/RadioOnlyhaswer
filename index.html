@@ -81,7 +81,7 @@ function show(id){
 // ** AUDIO: Usa PROXY corsproxy.io para garantizar el stream (Solución CORS)**
 const audio = document.getElementById("audio");
 // Codificamos la URL para pasar por el proxy, resolviendo el problema MP3/ICY y CORS.
-audio.src = "https://corsproxy.io/?" + encodeURIComponent("https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3"); 
+audio.src = "https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3"; 
 
 // ** NO AUTOPLAY SOLICITADO **
 // Al no llamar a audio.play(), evitamos el autoplay y el usuario debe hacer clic en "Play".
