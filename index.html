@@ -40,11 +40,10 @@ footer{margin:40px 0;color:#777;font-size:14px;}
   <div class="player">
     <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
     <audio id="audio" controls>
-    <source id="audio-source" src="" type="audio/mpeg">
+    <source id="audio-source" src="" type="audio/mpeg">
 </audio>
     <canvas id="viz"></canvas>
-    <div id="meta" class="meta">▶ **Radio en Vivo**</div>
-    <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
+    <div id="meta" class="meta">Cargando metadata...</div>     <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
     <div class="social">
       <a href="#">🌐</a>
       <a href="#">📘</a>
@@ -77,42 +76,40 @@ function show(id){
 }
   
 // *** 1. CONFIGURACIÓN DE URL Y AUDIO ***
-// ** 🚨 ¡CRÍTICO! Pega aquí la URL HTTPS que te dio ngrok para el stream actual**
-const NGROK_BASE_URL = "https://sweet-cycles-go.loca.lt"; 
+// ** URL de LocalTunnel (Actualizada) **
+const NGROK_BASE_URL = "https://sweet-cycles-go.loca.lt"; 
 
 const audio = document.getElementById("audio");
 const audioSource = document.getElementById("audio-source"); // Referencia a la nueva etiqueta <source>
 
 // ** Asignación de la URL al <source> y forzando el tipo MIME **
-audioSource.src = NGROK_BASE_URL + "/radio.mp3"; 
-
-// NO AUTOPLAY SOLICITADO
-// La reproducción inicia solo al hacer clic en "Play".
+audioSource.src = NGROK_BASE_URL + "/radio.mp3"; 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-let src; 
+let src; 
 let analyser;
 const canvas = document.getElementById("viz");
 const c = canvas.getContext("2d");
 const buffer = new Uint8Array(256 / 2);
 
 function setupVisualizer() {
-    if (!src) { 
-        src = ctx.createMediaElementSource(audio);
-        analyser = ctx.createAnalyser();
-        src.connect(analyser);
-        analyser.connect(ctx.destination);
-        analyser.fftSize = 256;
-        drawViz(); 
-    }
+    if (!src) { 
+        src = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser();
+        src.connect(analyser);
+        analyser.connect(ctx.destination);
+        analyser.fftSize = 256;
+        drawViz(); 
+    }
 }
 
+// Inicia el visualizador al presionar Play
 audio.addEventListener('play', setupVisualizer, { once: true });
 
 function drawViz(){
   requestAnimationFrame(drawViz);
-  if (!analyser) return; 
+  if (!analyser) return; 
 
   analyser.getByteFrequencyData(buffer);
   c.fillStyle="#111";
@@ -126,9 +123,31 @@ function drawViz(){
 }
 canvas.width=450;
 
-// *** 3. METADATA DESHABILITADA (Para evitar errores) ***
-document.getElementById("meta").innerText = "▶ Radio en Vivo";
-document.getElementById("listeners").innerText= "⚠️ Metadata no se actualiza (Restricción de seguridad)";
+
+// *** 3. METADATA HABILITADA CON LOCAL TUNNEL ***
+
+async function loadMeta(){
+    try {
+        // Usa la URL de LocalTunnel para acceder al archivo de estado JSON
+        const r = await fetch(NGROK_BASE_URL + "/status-json.xsl");
+        const j = await r.json();
+        let src = j.icestats.source;
+        
+        // Manejar si hay un solo source o un array
+        if(Array.isArray(src)) src = src.find(s => s.listenurl.includes("radio.mp3"));
+
+        document.getElementById("meta").innerText = "🎶 " + (src.title || "Radio en Vivo");
+        document.getElementById("listeners").innerText = "👥 Oyentes: " + (src.listeners || 0);
+
+    } catch(e){
+        document.getElementById("meta").innerText = "▶ Radio en Vivo (Metadata no disponible)";
+        document.getElementById("listeners").innerText = "⚠️ Error de conexión";
+    }
+}
+
+// Carga la metadata inmediatamente y luego cada 10 segundos
+loadMeta();
+setInterval(loadMeta, 10000); 
 
 </script>
 
