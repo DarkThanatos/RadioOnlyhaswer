@@ -76,14 +76,14 @@ function show(id){
 }
 
   
-// Configurar audio y metadata
-
 const NGROK_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
-  
+
+// AUDIO por proxy
 const audio = document.getElementById("audio");
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_URL + "/radio.mp3");
-audio.play().catch(()=>{}); // autoplay puede bloquearse en algunos navegadores
+audio.play().catch(()=>{}); 
 
+// METADATA por proxy
 const metaUrl = "https://corsproxy.io/?" + encodeURIComponent(NGROK_URL + "/status-json.xsl");
 
 // Visualizador
