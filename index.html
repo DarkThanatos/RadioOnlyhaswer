@@ -93,5 +93,44 @@ const ctx = new (window.AudioContext || window.webkitAudioContext)();
 let src; 
 let analyser;
 const canvas = document.getElementById("viz");
-const c = canvas.
+const c = canvas.getContext("2d");
+const buffer = new Uint8Array(256 / 2);
 
+function setupVisualizer() {
+    if (!src) { 
+        src = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser();
+        src.connect(analyser);
+        analyser.connect(ctx.destination);
+        analyser.fftSize = 256;
+        drawViz(); 
+    }
+}
+
+audio.addEventListener('play', setupVisualizer, { once: true });
+
+function drawViz(){
+  requestAnimationFrame(drawViz);
+  if (!analyser) return; 
+
+  analyser.getByteFrequencyData(buffer);
+  c.fillStyle="#111";
+  c.fillRect(0,0,canvas.width,canvas.height);
+  let barWidth=canvas.width/buffer.length;
+  for(let i=0;i<buffer.length;i++){
+    const h=buffer[i];
+    c.fillStyle="#4ade80";
+    c.fillRect(i*barWidth,canvas.height-h,barWidth-1,h);
+  }
+}
+canvas.width=450;
+
+// *** 3. METADATA ELIMINADA ***
+// Eliminamos el código de metadatos para evitar errores CORS y el mensaje de error de ngrok
+document.getElementById("meta").innerText = "▶ Radio en Vivo";
+document.getElementById("listeners").innerText= "⚠️ Metadata no se actualiza (Restricción de seguridad)";
+
+</script>
+
+</body>
+</html>
