@@ -75,7 +75,8 @@ function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
 }
-
+const NGROK_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+  
 // Configurar audio y metadata
 const audio = document.getElementById("audio");
 audio.src = NGROK_URL + "/radio.mp3";
