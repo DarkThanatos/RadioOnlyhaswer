@@ -125,35 +125,36 @@ function drawViz(){
 canvas.width=450;
 
 
-// *** 3. METADATA EN VIVO (Manejo de errores mejorado) ***
+// *** 3. METADATA EN VIVO (Manejo de errores para diagnóstico) ***
 async function loadMeta(){
   try{
-    // Paso 1: Obtener la respuesta del proxy AllOrigins
+    // Utilizamos la URL de AllOrigins ya definida: const metaUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(ICECAST_STATUS_URL);
+    
     const r = await fetch(metaUrl);
     if (!r.ok) throw new Error(`Error HTTP: ${r.status}`);
 
     const proxyResponse = await r.json();
+    let rawContents = proxyResponse.contents; // El contenido crudo de Icecast
     
-    // Paso 2: Verificar errores del proxy o de ngrok
-    if (proxyResponse.status && proxyResponse.status.http_code !== 200) {
-        throw new Error(`Error en el túnel ngrok/Icecast (código: ${proxyResponse.status.http_code})`);
+    // 1. Verificar si AllOrigins devolvió la data esperada
+    if (!rawContents) {
+        throw new Error("El proxy no pudo obtener datos.");
     }
-
-    // Paso 3: Intentar parsear el contenido de Icecast
+    
+    // 2. Intentar parsear el contenido de Icecast
     let contents;
     try {
-        // El contenido de Icecast viene como un string dentro de 'contents'
-        contents = JSON.parse(proxyResponse.contents);
+        contents = JSON.parse(rawContents);
     } catch(e) {
-        console.error("Fallo al parsear JSON:", proxyResponse.contents);
-        // Si no se puede parsear, probablemente Icecast devolvió un XML o texto de error
-        throw new Error("Icecast no devolvió JSON válido. (¿Es XML?)");
+        // En caso de fallo, mostramos los primeros 50 caracteres
+        let preview = rawContents.substring(0, 50); 
+        console.error("Fallo al parsear JSON. Contenido crudo:", preview);
+        throw new Error(`Fallo de formato. Preview: ${preview}...`);
     }
     
-    // Paso 4: Extraer la información
+    // 3. Extraer la información (solo si el parseo fue exitoso)
     let srcData = contents.icestats.source;
     if(Array.isArray(srcData)) {
-        // Busca el punto de montaje correcto
         srcData = srcData.find(s=>s.listenurl && s.listenurl.includes("radio.mp3"));
     }
     if(!srcData) srcData = {}; 
@@ -163,7 +164,7 @@ async function loadMeta(){
 
   }catch(e){
     // Muestra el mensaje de error específico en la consola y en el div 'listeners'
-    console.error("Error al cargar metadata:", e.message); 
+    console.error("Error final en loadMeta:", e.message); 
     document.getElementById("meta").innerText="Metadata no disponible (Error)";
     document.getElementById("listeners").innerText="FALLO: " + e.message; 
   }
