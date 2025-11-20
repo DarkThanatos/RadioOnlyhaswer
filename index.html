@@ -74,9 +74,12 @@ function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
 }
-const NGROK_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+
   
 // Configurar audio y metadata
+
+const NGROK_URL = "https://oblanceolate-preapply-oneida.ngrok-free.dev";
+  
 const audio = document.getElementById("audio");
 audio.src = "https://corsproxy.io/?" + encodeURIComponent(NGROK_URL + "/radio.mp3");
 audio.play().catch(()=>{}); // autoplay puede bloquearse en algunos navegadores
