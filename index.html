@@ -38,10 +38,7 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 <div id="radio" class="section" style="display:block">
   <div class="player">
     <img src="https://cdn-icons-png.flaticon.com/512/727/727245.png" width="90" alt="logo">
-    <audio id="audio" controls>
-      <source src="https://oblanceolate-preapply-oneida.ngrok-free.dev/radio.mp3" type="audio/mpeg">
-      Tu navegador no soporta reproducción de audio.
-    </audio>
+    <audio id="audio" controls></audio>
     <canvas id="viz"></canvas>
     <div id="meta" class="meta">Cargando metadata...</div>
     <div id="listeners" style="margin-top:8px;color:#aaa;font-size:14px"></div>
@@ -72,14 +69,21 @@ footer{margin:40px 0;color:#777;font-size:14px;}
 
 <footer>Radio Only Haswer — GitHub Pages</footer>
 
+<script src="config.js"></script>
 <script>
 function show(id){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
   document.getElementById(id).style.display='block';
 }
 
-// Visualizador
+// Configurar audio y metadata
 const audio = document.getElementById("audio");
+audio.src = NGROK_URL + "/radio.mp3";
+audio.play().catch(()=>{}); // autoplay puede bloquearse en algunos navegadores
+
+const metaUrl = NGROK_URL + "/status-json.xsl";
+
+// Visualizador
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const src = ctx.createMediaElementSource(audio);
 const analyser = ctx.createAnalyser();
@@ -104,16 +108,15 @@ function drawViz(){
 canvas.width=450;
 drawViz();
 
-// Metadata vía ngrok HTTPS
-const metaUrl = "https://oblanceolate-preapply-oneida.ngrok-free.dev/status-json.xsl";
+// Metadata en vivo
 async function loadMeta(){
   try{
     const r = await fetch(metaUrl);
     const j = await r.json();
-    let src=j.icestats.source;
-    if(Array.isArray(src)) src=src.find(s=>s.listenurl.includes("radio.mp3"));
-    document.getElementById("meta").innerText="▶ "+(src.title||"Sin metadata");
-    document.getElementById("listeners").innerText="👥 Oyentes: "+(src.listeners||0);
+    let srcData = j.icestats.source;
+    if(Array.isArray(srcData)) srcData = srcData.find(s=>s.listenurl.includes("radio.mp3"));
+    document.getElementById("meta").innerText="▶ "+(srcData.title||"Sin metadata");
+    document.getElementById("listeners").innerText="👥 Oyentes: "+(srcData.listeners||0);
   }catch(e){
     document.getElementById("meta").innerText="Metadata no disponible";
     document.getElementById("listeners").innerText="";
@@ -125,6 +128,7 @@ setInterval(loadMeta,10000);
 
 </body>
 </html>
+
 
 
 
