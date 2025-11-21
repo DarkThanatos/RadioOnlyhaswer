@@ -79,13 +79,12 @@ function show(id){
   
 // *** 1. CONFIGURACIÓN DE URL Y AUDIO ***
 // 🚨 RECUERDA: Cambia esta URL por tu LocalTunnel activo si el actual falla.
-const NGROK_BASE_URL = "https://radios.yanapak.org"; 
 
 const audio = document.getElementById("audio");
 const audioSource = document.getElementById("audio-source"); 
 
 // ** Asignación de la URL al <source> **
-audioSource.src = NGROK_BASE_URL + "/onlyhaswer_radio"; 
+audioSource.src ="https://onlyhaswerradio.ismyradio.com/"; 
 
 // --- 2. VISUALIZADOR DE AUDIO ---
 let ctx; // DECLARACIÓN SIN INICIALIZAR
@@ -136,7 +135,7 @@ canvas.width=450;
 async function loadMeta(){
     try {
         // Usa la URL de LocalTunnel para acceder al archivo de estado JSON
-        const r = await fetch(NGROK_BASE_URL + "/status-json.xsl");
+        const r = await fetch("https://onlyhaswerradio.ismyradio.com");
         const j = await r.json();
         let src = j.icestats.source;
         
