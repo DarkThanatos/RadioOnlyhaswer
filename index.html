@@ -5,12 +5,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>OnlyHaswer Radio — Player Pro</title>
 <style>
+  /* Variables de color - Aseguramos los valores oscuros por defecto */
   :root{
-    --bg:#060606; --card:#0e0e0e; --accent:#00ff66; --muted:#9aa79a; --text:#e6ffe9;
+    --bg:#060606; 
+    --card:#0e0e0e; 
+    --accent:#00ff66; 
+    --muted:#9aa79a; 
+    --text:#e6ffe9;
   }
-  [data-theme="light"]{ --bg:#f6f7f8; --card:#ffffff; --accent:#008f3a; --muted:#556; --text:#111; }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif;display:flex;justify-content:center;padding:28px;}
+  /* Tema claro (segun tu codigo) */
+  [data-theme="light"]{ 
+    --bg:#f6f7f8; 
+    --card:#ffffff; 
+    --accent:#008f3a; 
+    --muted:#556; 
+    --text:#111; 
+  }
+  
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg); /* Usa el fondo oscuro */
+    color:var(--text);
+    font-family:Inter,Arial,Helvetica,sans-serif;
+    display:flex;
+    justify-content:center;
+    padding:28px;
+  }
   .wrap{width:100%;max-width:1100px;}
   header.appHeader{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
   header.appHeader img{height:56px;border-radius:10px;box-shadow:0 6px 18px rgba(0,255,102,.06);}
@@ -46,14 +67,14 @@
   .visualizer{display:flex;gap:6px;align-items:flex-end;height:52px;margin-top:18px;}
   .visualizer div{width:6px;background:var(--accent);border-radius:4px;opacity:.25;transform-origin:bottom;transition:height .06s linear;}
 
-  /* listeners */
+  /* listeners - Mantenemos el estilo, pero la lógica de conteo es eliminada del JS */
   .listeners{margin-top:12px;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center;}
   .listenerDot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px rgba(0,255,102,.25);}
 
   .externalBtn{display:inline-block;margin-top:10px;background:transparent;border:1px solid rgba(0,255,102,.12);padding:8px 10px;border-radius:8px;color:var(--accent);text-decoration:none;}
   .smallNote{font-size:12px;color:var(--muted);margin-top:10px;}
 
-  /* SIDEBAR - Modified to remove chat styles */
+  /* SIDEBAR */
   .sideCard{background:var(--card);padding:14px;border-radius:12px;}
   .infoList{margin-top:12px;font-size:14px;color:var(--muted);line-height:1.45;}
 
@@ -61,316 +82,5 @@
 
   /* small responsive tweaks */
   @media (max-width:520px){
-    .playBtn{width:72px;height:72px;font-size:22px}
-    .volume{width:110px}
-    header.appHeader img{height:48px}
-  }
-</style>
-</head>
-<body data-theme="dark">
-  <div class="wrap">
-    <header class="appHeader">
-      <img src="onlyhaswer2.png" alt="OnlyHaswer logo" />
-      <h1>OnlyHaswer Radio — En vivo</h1>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-        <button id="themeToggle" class="themeToggle" title="Cambiar tema">🌗 Tema</button>
-      </div>
-    </header>
-
-    <div class="layout">
-            <div class="playerCard" id="mainPlayer">
-        <div class="playerTop">
-          <img class="logoSmall" src="onlyhaswer2.png" alt="logo">
-          <div class="metaBlock">
-            <div class="stationTitle">OnlyHaswer Radio</div>
-            <div class="stationStatus" id="stationStatus">Conectando…</div>
-
-            <div class="playBtnWrap">
-              <button id="playBtn" class="playBtn" aria-label="Play">▶</button>
-              <div>
-                <div class="playInfo" id="playLabel">Presiona para escuchar</div>
-                <div style="margin-top:6px;color:var(--muted);font-size:13px;">
-                  Stream: <span style="font-family:monospace;font-size:12px;color:#bfffc9">live.mp3</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="controlsRow">
-              <button id="muteBtn" class="controlSmall" title="Silenciar">🔈</button>
-              <input id="volRange" class="volume" type="range" min="0" max="1" step="0.01" value="0.9">
-              <div class="shareBtns">
-                <button id="shareWhats" class="shareBtn" title="Compartir por WhatsApp">WA</button>
-                <button id="shareFb" class="shareBtn" title="Compartir en Facebook">FB</button>
-                <button id="shareTw" class="shareBtn" title="Compartir en Twitter">TW</button>
-              </div>
-            </div>
-
-            <div class="visualizer" id="viz">
-              <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
-              <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
-              <div style="height:8px"></div>
-            </div>
-
-            <div class="listeners" id="listenersLine">
-              <div class="listenerDot"></div>
-              <div id="listenersCount">Oyentes: —</div>
-            </div>
-
-            <a id="externalOpen" class="externalBtn" href="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" target="_blank" rel="noopener noreferrer">
-              Abrir en reproductor externo (VLC/Winamp)
-            </a>
-
-            <div class="smallNote" style="margin-top:8px;">
-              Nota: si el stream no arranca, presiona Play manualmente (políticas de autoplay del navegador).
-            </div>
-          </div>
-        </div>
-      </div>
-
-            <aside>
-        <div class="sideCard">
-          <div style="font-weight:700;color:var(--accent);">Información</div>
-          <div class="infoList">
-            <div id="metaNow">Estado: intentando cargar metadata…</div>
-            <div id="metaSong" style="margin-top:6px;color:var(--muted);font-weight:600">Now Playing: —</div>
-            <div style="margin-top:8px;">
-              <button id="copyStream" class="controlSmall">Copiar URL del stream</button>
-            </div>
-            <div style="margin-top:10px;font-size:13px;color:var(--muted);">
-              Botones: compartir, abrir en VLC/Winamp, ver oyentes (si el servidor lo permite).
-            </div>
-          </div>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-    <audio id="hiddenAudio" crossorigin="anonymous" preload="none"
-    src="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" style="display:none"></audio>
-
-<script>
-/* CONFIG */
-const STREAM_URL = "https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691";
-const METADATA_URL = "http://onlyhaswerradio.ddns.net:8000/status-json.xsl"; // Icecast status JSON via your DDNS
-const POLL_INTERVAL = 7000; // ms
-
-/* ELEMENTS */
-const audio = document.getElementById('hiddenAudio');
-const playBtn = document.getElementById('playBtn');
-const playLabel = document.getElementById('playLabel');
-const stationStatus = document.getElementById('stationStatus');
-const listenersCount = document.getElementById('listenersCount');
-const viz = document.getElementById('viz');
-const volRange = document.getElementById('volRange');
-const muteBtn = document.getElementById('muteBtn');
-const metaSong = document.getElementById('metaSong');
-const metaNow = document.getElementById('metaNow');
-const copyBtn = document.getElementById('copyStream');
-const themeToggle = document.getElementById('themeToggle');
-
-let audioCtx, analyser, sourceNode, rafId;
-let isPlaying = false;
-
-/* PLAY / PAUSE */
-playBtn.addEventListener('click', async () => {
-  try {
-    if (audio.paused) {
-      await audio.play();
-      isPlaying = true;
-      playBtn.textContent = "⏸";
-      playLabel.textContent = "Reproduciendo";
-      stationStatus.textContent = "Conectado";
-      viz.style.opacity = 1;
-      startVisualizer();
-    } else {
-      audio.pause();
-      isPlaying = false;
-      playBtn.textContent = "▶";
-      playLabel.textContent = "Pausado";
-      stationStatus.textContent = "Pausado";
-      viz.style.opacity = 0.45;
-      stopVisualizer();
-    }
-  } catch (err) {
-    console.warn("Play error:", err);
-    stationStatus.textContent = "Error al reproducir (clic manual requerido)";
-  }
-});
-
-/* VOLUME / MUTE */
-audio.volume = parseFloat(volRange.value);
-volRange.addEventListener('input', (e)=> audio.volume = e.target.value);
-muteBtn.addEventListener('click', ()=> {
-  audio.muted = !audio.muted;
-  muteBtn.textContent = audio.muted ? "🔇" : "🔈";
-});
-
-/* COPY STREAM */
-copyBtn.addEventListener('click', async ()=>{
-  try {
-    await navigator.clipboard.writeText(STREAM_URL);
-    copyBtn.textContent = "Copiado ✓";
-    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
-  } catch {
-    copyBtn.textContent = "Error";
-    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
-  }
-});
-
-/* SHARE BUTTONS */
-const pageURL = encodeURIComponent(window.location.href);
-document.getElementById('shareWhats').addEventListener('click', ()=> {
-  const u = encodeURIComponent(STREAM_URL);
-  window.open(`https://api.whatsapp.com/send?text=Estoy escuchando OnlyHaswer Radio: ${u}`, '_blank');
-});
-document.getElementById('shareFb').addEventListener('click', ()=> {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank');
-});
-document.getElementById('shareTw').addEventListener('click', ()=> {
-  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Escuchá OnlyHaswer Radio")}&url=${pageURL}`, '_blank');
-});
-
-/* THEME TOGGLE */
-function setTheme(t){ document.body.setAttribute('data-theme', t); localStorage.setItem('oh_theme', t); }
-themeToggle.addEventListener('click', ()=> { const cur = document.body.getAttribute('data-theme')||'dark'; setTheme(cur==='dark'?'light':'dark'); });
-(function initTheme(){ const saved = localStorage.getItem('oh_theme'); if(saved) setTheme(saved); })();
-
-/* VISUALIZER (WebAudio) */
-function startVisualizer(){
-  if (audioCtx) return;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 128;
-    sourceNode = audioCtx.createMediaElementSource(audio);
-    sourceNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    renderViz();
-  } catch(e){
-    console.warn("Visualizer not available:", e);
-  }
-}
-function stopVisualizer(){
-  if(!audioCtx) return;
-  if(rafId) cancelAnimationFrame(rafId);
-  try { analyser.disconnect(); sourceNode.disconnect(); audioCtx.close(); } catch(e){}
-  audioCtx = null; analyser = null; sourceNode = null; rafId = null;
-  const bars = viz.querySelectorAll('div'); bars.forEach(b=> b.style.height='8px');
-}
-function renderViz(){
-  if(!analyser) return;
-  const bufferLength = analyser.frequencyBinCount;
-  const data = new Uint8Array(bufferLength);
-  const bars = viz.querySelectorAll('div');
-  function draw(){
-    rafId = requestAnimationFrame(draw);
-    analyser.getByteFrequencyData(data);
-    for(let i=0;i<bars.length;i++){
-      const v = data[i] || 8;
-      const h = Math.max(8, Math.min(52, Math.round((v / 255) * 52)));
-      bars[i].style.height = h + 'px';
-      bars[i].style.opacity = (0.25 + (v/255)*0.75).toString();
-    }
-  }
-  draw();
-}
-
-/* METADATA & LISTENERS (graceful fallback if CORS) */
-async function fetchStatusJson(){
-  try {
-    const res = await fetch(METADATA_URL, {mode:'cors'});
-    if(!res.ok) throw new Error('no-ok');
-    const text = await res.text();
-    // try parse JSON embedded or plain JSON
-    let json;
-    try { json = JSON.parse(text); } catch(e){
-      // sometimes status.xsl returns HTML/XML -> try to extract JSON-like
-      const jMatch = text.match(/\{[\s\S]*\}/);
-      if(jMatch) json = JSON.parse(jMatch[0]);
-    }
-    if(json && json.icestats){
-      const src = json.icestats.source;
-      let mount = src;
-      if(Array.isArray(src)){
-        // find the mount that matches '/stream' or has listenurl
-        mount = src.find(s => (s.listenurl && s.listenurl.includes('/stream')) || s.listenurl) || src[0];
-      }
-      const title = (mount && (mount.title || mount.song)) || null;
-      const listeners = mount && (mount.listeners || mount.currentlisteners || mount.streams);
-      if(title) metaSong.textContent = "Now Playing: " + title;
-      if(listeners !== undefined) listenersCount.textContent = "Oyentes: " + listeners;
-      metaNow.textContent = "Conectado (datos públicos)";
-      stationStatus.textContent = "Conectado";
-      return true;
-    } else {
-      throw new Error('no-json');
-    }
-  } catch(err){
-    console.debug("fetchStatusJson failed:", err);
-    return false;
-  }
-}
-
-/* fallback: try parse common HTML endpoints (7.html) */
-async function fetch7Html(url){
-  try {
-    const res = await fetch(url, {mode:'cors'});
-    if(!res.ok) throw new Error('no-ok');
-    const txt = await res.text();
-    // parse simple patterns
-    let m = txt.match(/Current Song:\s*<[^>]*>([^<]+)/i) || txt.match(/Currently Playing:\s*([^<\r\n]+)/i) || txt.match(/Stream Title:\s*([^<\r\n]+)/i);
-    if(m && m[1]){
-      metaSong.textContent = "Now Playing: " + m[1].trim();
-      metaNow.textContent = "Conectado (datos públicos)";
-      return true;
-    }
-  } catch(e){
-    console.debug("fetch7Html failed", e);
-  }
-  return false;
-}
-
-/* Try endpoints in order */
-async function tryFetchMetadata(){
-  // Quick optimistic fetch to METADATA_URL (status-json.xsl)
-  const ok = await fetchStatusJson();
-  if(ok) return;
-  // try variations
-  const candidates = [
-    METADATA_URL.replace('/status-json.xsl','/status.xsl'),
-    METADATA_URL.replace('/status-json.xsl','/7.html'),
-    METADATA_URL.replace('/status-json.xsl','/status'),
-  ];
-  for(const c of candidates){
-    const r = await fetch7Html(c);
-    if(r) return;
-  }
-  // if none worked:
-  metaNow.textContent = "Metadata no disponible públicamente (CORS / endpoint)";
-  listenersCount.textContent = "Oyentes: —";
-}
-
-/* periodic polling */
-tryFetchMetadata();
-setInterval(tryFetchMetadata, POLL_INTERVAL);
-
-/* initial UI */
-metaNow.textContent = "Intentando cargar metadata…";
-metaSong.textContent = "Now Playing: —";
-
-/* EXTERNAL OPEN - tries to open stream in external player (user agent handles) */
-document.getElementById('externalOpen').addEventListener('click', (e) => {
-  // opens the raw stream URL in a new tab where user can choose 'open with' in system
-});
-
-/* small safety: stop audio when page hidden */
-document.addEventListener('visibilitychange', ()=> {
-  if(document.hidden && isPlaying){ audio.pause(); playBtn.textContent="▶"; playLabel.textContent="Pausado"; isPlaying=false; stopVisualizer(); }
-});
-</script>
-
-</body>
-</html>
-
 
 
