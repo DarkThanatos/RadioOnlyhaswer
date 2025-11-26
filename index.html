@@ -5,19 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OnlyHaswer Radio</title>
 <style>
+/* Estilos para el diseño oscuro y responsive */
 body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial, sans-serif;text-align:center;overflow-x:hidden;}
 .bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 20%, #1f1f1f, #000);animation:bgmove 12s infinite alternate;z-index:-1;}
 @keyframes bgmove{0%{background-position:0 0}100%{background-position:100px 200px}}
 header{padding:25px;font-size:32px;font-weight:bold;background:#111;box-shadow:0 2px 20px #000;letter-spacing:1px;}
-.main-content {padding: 25px 15px; max-width: 950px; margin: 0 auto;}
-.player{margin:20px auto;background:#1b1b1b;padding:25px;border-radius:18px;box-shadow:0 0 20px #000;}
-.chat-container {margin-top: 40px;padding: 25px;background: #1b1b1b;border-radius: 18px;box-shadow:0 0 20px #000;}
-.chat-title {font-size: 24px;margin-bottom: 15px;color: #4ade80;}
+
+/* Contenedor principal */
+.main-content {padding: 25px 15px;max-width: 950px;margin: 0 auto;}
+
+/* Player */
+.player{
+    margin:20px auto;
+    background:#1b1b1b;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 0 20px #000;
+}
+
+/* Chat */
+.chat-container {
+    margin-top: 40px;
+    padding: 25px;
+    background: #1b1b1b;
+    border-radius: 18px;
+    box-shadow:0 0 20px #000;
+}
+.chat-title {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #4ade80;
+}
+
 .social{margin-top:20px;display:flex;justify-content:center;gap:20px;}
 .social a{color:#fff;font-size:24px;text-decoration:none;}
 footer{margin:40px 0;color:#777;font-size:14px;}
-iframe {border: none;border-radius: 10px;display: block; margin: 0 auto;width: 900px;height: 600px;}
-@media (max-width: 960px) {.main-content { max-width: 95%; } .chat-container { padding: 10px; } iframe { width: 100%; height: 400px; }}
+
+/* Iframe del chat */
+iframe {
+    border: none;
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+    width: 900px;
+    height: 600px;
+}
+
+/* Móvil */
+@media (max-width: 960px) {
+    .main-content { max-width: 95%; }
+    .chat-container { padding: 10px; }
+    iframe { width: 100%; height: 400px; }
+}
 </style>
 </head>
 <body>
@@ -26,27 +65,40 @@ iframe {border: none;border-radius: 10px;display: block; margin: 0 auto;width: 9
 <header>📻 OnlyHaswer Radio</header>
 
 <div class="main-content">
+    
+    <div id="radio">
+        <div class="player">
+            <img src="onlyhaswer2.png" alt="logo" style="max-width:250px;margin-bottom:15px;">
 
-  <div id="radio">
-    <div class="player">
-      <img src="onlyhaswer2.png" alt="logo">
-      <!-- Reproductor Listen2MyRadio -->
-      <iframe src="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" 
-              title="OnlyHaswer Radio" allow="autoplay" ></iframe>
-      <div class="social">
-        <a href="#">🌐</a>
-        <a href="#">📘</a>
-        <a href="#">▶️</a>
-        <a href="#">📸</a>
-      </div>
+            <h3 style="color:#4ade80;margin:10px 0;">🔊 En vivo — OnlyHaswer Radio</h3>
+
+            <!-- Player Simple y Bonito -->
+            <audio controls preload="none" style="
+                width: 100%;
+                max-width: 350px;
+                background:#000;
+                border-radius: 12px;
+                box-shadow: 0 0 15px #00ff80;
+                outline: none;
+            ">
+                <source src="https://uk26freenew.listen2myradio.com:5838/stream" type="audio/mpeg">
+                Tu navegador no soporta stream de radio.
+            </audio>
+
+            <div class="social">
+                <a href="#">🌐</a>
+                <a href="#">📘</a>
+                <a href="#">▶️</a>
+                <a href="#">📸</a>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div id="chat" class="chat-container">
-    <div class="chat-title">💬 Chat en vivo</div>
-    <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
-            title="Chat Xat OnlyHaswerRadio"></iframe>
-  </div>
+    <div id="chat" class="chat-container">
+        <div class="chat-title">💬 Chat en vivo</div>
+        <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
+        title="Chat Xat OnlyHaswerRadio"></iframe>
+    </div>
 
 </div>
 
@@ -54,6 +106,7 @@ iframe {border: none;border-radius: 10px;display: block; margin: 0 auto;width: 9
 
 </body>
 </html>
+
 
 
 
