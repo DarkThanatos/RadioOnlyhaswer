@@ -57,5 +57,65 @@
       </div>
     </div>
 
-    <div id="chat" class="chat-
+    <div id="chat" class="chat-container">
+      <div class="chat-title">💬 Chat en vivo</div>
+      <div>
+        <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
+                title="Chat Xat OnlyHaswerRadio"></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Radio Only Haswer — GitHub Pages</footer>
+
+  <script>
+    const STREAM_URL  = "https://radioonlyhaswer.radiostream123.com:8000";
+    const MOUNT_POINT = "/stream";
+    const STATUS_URL  = STREAM_URL + "/status-json.xsl";
+
+    const nowPlayingEl = document.getElementById("nowPlaying");
+    const listenersEl  = document.getElementById("listeners");
+    const statusEl     = document.getElementById("status");
+    const audio        = document.getElementById("radioPlayer");
+
+    async function updateMetadata() {
+      try {
+        const resp = await fetch(STATUS_URL);
+        if (!resp.ok) throw new Error("No response JSON");
+
+        const data = await resp.json();
+        const src  = data.icestats.source;
+
+        // Si solo hay una fuente
+        const mount = Array.isArray(src) ? src.find(s => s.listenurl && s.listenurl.endsWith(MOUNT_POINT)) : src;
+        if (mount) {
+          const title = mount.title || "En vivo 🔴";
+          const lst   = mount.listeners !== undefined ? mount.listeners : "--";
+
+          nowPlayingEl.textContent = "🎵 " + title;
+          listenersEl.textContent  = "Oyentes: " + lst;
+          statusEl.textContent     = "✅ Conectado";
+        } else {
+          nowPlayingEl.textContent = "⚠️ Montaje no encontrado";
+          statusEl.textContent     = "⚠️ Ruta incorrecta";
+        }
+      } catch (e) {
+        console.warn("Error metadata:", e);
+        statusEl.textContent = "❌ No se puede obtener metadata";
+      }
+    }
+
+    // Actualiza cada 7 segundos
+    setInterval(updateMetadata, 7000);
+    updateMetadata();
+
+    audio.addEventListener("error", () => { statusEl.textContent = "❌ Error al reproducir"; });
+    audio.addEventListener("playing", () => { statusEl.textContent = "🔊 Reproduciendo"; });
+    audio.addEventListener("pause", () => { statusEl.textContent = "⏸️ Pausado"; });
+  </script>
+
+</body>
+</html>
+
 
