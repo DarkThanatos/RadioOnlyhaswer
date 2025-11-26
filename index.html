@@ -223,25 +223,29 @@ function renderViz(){
 }
 
 
-function actualizarCancion() {
-    const script = document.createElement("script");
-    script.src = "http://onlyhaswerradio.ddns.net:8000/status-json.xsl?callback=metadataCallback&_=" + Date.now();
-    document.body.appendChild(script);
-}
-
-function metadataCallback(data) {
-    let titulo = "Sin información";
-    if (data.icestats && data.icestats.source && data.icestats.source.title) {
-        titulo = data.icestats.source.title;
+async function getMeta() {
+  const player = document.getElementById('player');
+  try {
+    const res = await fetch("https://uk26freenew.listen2myradio.com/live.mp3", {
+      method: "HEAD"
+    });
+    const title = res.headers.get("icy-title");
+    if (title) {
+      document.getElementById("meta").innerText = title;
+    } else {
+      document.getElementById("meta").innerText = "Transmitiendo…";
     }
-    document.getElementById("nowplaying").innerText = titulo;
+  } catch {
+    document.getElementById("meta").innerText = "Transmitiendo…";
+  }
 }
 
-setInterval(actualizarCancion, 3000);
-actualizarCancion();
-
-
+setInterval(getMeta, 5000);
 </script>
+
+<div id="meta" style="color:white;margin-top:10px;font-size:16px;">
+  Cargando metadata…
+</div>
 
 </body>
 </html>
