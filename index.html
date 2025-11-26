@@ -42,8 +42,8 @@
   .shareBtns{display:flex;gap:8px;margin-left:auto;}
   .shareBtn{background:transparent;border:1px solid rgba(0,255,102,.08);color:var(--accent);padding:6px 8px;border-radius:8px;cursor:pointer;font-size:14px;}
 
-  /* Visualizer - Estilos se mantienen, pero la funcionalidad JS está deshabilitada */
-  .visualizer{display:flex;gap:6px;align-items:flex-end;height:52px;margin-top:18px; opacity:0.45;}
+  /* Visualizer */
+  .visualizer{display:flex;gap:6px;align-items:flex-end;height:52px;margin-top:18px;}
   .visualizer div{width:6px;background:var(--accent);border-radius:4px;opacity:.25;transform-origin:bottom;transition:height .06s linear;}
 
   /* listeners */
@@ -174,30 +174,28 @@ const metaNow = document.getElementById('metaNow');
 const copyBtn = document.getElementById('copyStream');
 const themeToggle = document.getElementById('themeToggle');
 
-// Variables del visualizador deshabilitadas para evitar conflicto CORS
-// let audioCtx, analyser, sourceNode, rafId; 
+let audioCtx, analyser, sourceNode, rafId;
 let isPlaying = false;
 
 /* PLAY / PAUSE */
 playBtn.addEventListener('click', async () => {
   try {
     if (audio.paused) {
-      // La reproducción es simple sin el visualizador
       await audio.play();
       isPlaying = true;
       playBtn.textContent = "⏸";
       playLabel.textContent = "Reproduciendo";
       stationStatus.textContent = "Conectado";
-      
-      // No se llama a startVisualizer()
+      viz.style.opacity = 1;
+      startVisualizer();
     } else {
       audio.pause();
       isPlaying = false;
       playBtn.textContent = "▶";
       playLabel.textContent = "Pausado";
       stationStatus.textContent = "Pausado";
-      
-      // No se llama a stopVisualizer()
+      viz.style.opacity = 0.45;
+      stopVisualizer();
     }
   } catch (err) {
     console.warn("Play error:", err);
@@ -213,94 +211,25 @@ muteBtn.addEventListener('click', ()=> {
   muteBtn.textContent = audio.muted ? "🔇" : "🔈";
 });
 
-/* COPY STREAM, SHARE BUTTONS, THEME TOGGLE... (código intacto) */
+/* COPY STREAM */
 copyBtn.addEventListener('click', async ()=>{
-  try { await navigator.clipboard.writeText(STREAM_URL); copyBtn.textContent = "Copiado ✓"; setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600); } 
-  catch { copyBtn.textContent = "Error"; setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600); }
+  try {
+    await navigator.clipboard.writeText(STREAM_URL);
+    copyBtn.textContent = "Copiado ✓";
+    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+  } catch {
+    copyBtn.textContent = "Error";
+    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+  }
 });
 
+/* SHARE BUTTONS */
 const pageURL = encodeURIComponent(window.location.href);
-document.getElementById('shareWhats').addEventListener('click', ()=> { const u = encodeURIComponent(STREAM_URL); window.open(`https://api.whatsapp.com/send?text=Estoy escuchando OnlyHaswer Radio: ${u}`, '_blank'); });
-document.getElementById('shareFb').addEventListener('click', ()=> { window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank'); });
-document.getElementById('shareTw').addEventListener('click', ()=> { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Escuchá OnlyHaswer Radio")}&url=${pageURL}`, '_blank'); });
-
-function setTheme(t){ document.body.setAttribute('data-theme', t); localStorage.setItem('oh_theme', t); }
-themeToggle.addEventListener('click', ()=> { const cur = document.body.getAttribute('data-theme')||'dark'; setTheme(cur==='dark'?'light':'dark'); });
-(function initTheme(){ const saved = localStorage.getItem('oh_theme'); if(saved) setTheme(saved); })();
-
-/* VISUALIZER - Funciones de WebAudio ELIMINADAS/COMENTADAS */
-// function startVisualizer(){...}
-// function stopVisualizer(){...}
-// function renderViz(){...}
-
-/* METADATA & LISTENERS (código intacto) */
-async function fetchStatusJson(){
-  try {
-    const res = await fetch(METADATA_URL, {mode:'cors'});
-    if(!res.ok) throw new Error('no-ok');
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch(e){
-      const jMatch = text.match(/\{[\s\S]*\}/);
-      if(jMatch) json = JSON.parse(jMatch[0]);
-    }
-    if(json && json.icestats){
-      const src = json.icestats.source;
-      let mount = src;
-      if(Array.isArray(src)){ mount = src.find(s => (s.listenurl && s.listenurl.includes('/stream')) || s.listenurl) || src[0]; }
-      const title = (mount && (mount.title || mount.song)) || null;
-      const listeners = mount && (mount.listeners || mount.currentlisteners || mount.streams);
-      if(title) metaSong.textContent = "Now Playing: " + title;
-      if(listeners !== undefined) listenersCount.textContent = "Oyentes: " + listeners;
-      metaNow.textContent = "Conectado (datos públicos)";
-      stationStatus.textContent = "Conectado";
-      return true;
-    } else { throw new Error('no-json'); }
-  } catch(err){ console.debug("fetchStatusJson failed:", err); return false; }
-}
-
-async function fetch7Html(url){
-  try {
-    const res = await fetch(url, {mode:'cors'});
-    if(!res.ok) throw new Error('no-ok');
-    const txt = await res.text();
-    let m = txt.match(/Current Song:\s*<[^>]*>([^<]+)/i) || txt.match(/Currently Playing:\s*([^<\r\n]+)/i) || txt.match(/Stream Title:\s*([^<\r\n]+)/i);
-    if(m && m[1]){
-      metaSong.textContent = "Now Playing: " + m[1].trim();
-      metaNow.textContent = "Conectado (datos públicos)";
-      return true;
-    }
-  } catch(e){ console.debug("fetch7Html failed", e); }
-  return false;
-}
-
-async function tryFetchMetadata(){
-  const ok = await fetchStatusJson();
-  if(ok) return;
-  const candidates = [
-    METADATA_URL.replace('/status-json.xsl','/status.xsl'),
-    METADATA_URL.replace('/status-json.xsl','/7.html'),
-    METADATA_URL.replace('/status-json.xsl','/status'),
-  ];
-  for(const c of candidates){ const r = await fetch7Html(c); if(r) return; }
-  metaNow.textContent = "Metadata no disponible públicamente (CORS / endpoint)";
-  listenersCount.textContent = "Oyentes: —";
-}
-
-tryFetchMetadata();
-setInterval(tryFetchMetadata, POLL_INTERVAL);
-
-metaNow.textContent = "Intentando cargar metadata…";
-metaSong.textContent = "Now Playing: —";
-
-/* EXTERNAL OPEN */
-document.getElementById('externalOpen').addEventListener('click', (e) => {});
-
-/* small safety: stop audio when page hidden */
-document.addEventListener('visibilitychange', ()=> {
-  if(document.hidden && isPlaying){ audio.pause(); playBtn.textContent="▶"; playLabel.textContent="Pausado"; isPlaying=false; }
+document.getElementById('shareWhats').addEventListener('click', ()=> {
+  const u = encodeURIComponent(STREAM_URL);
+  window.open(`https://api.whatsapp.com/send?text=Estoy escuchando OnlyHaswer Radio: ${u}`, '_blank');
 });
-</script>
-
-</body>
-</html>
+document.getElementById('shareFb').addEventListener('click', ()=> {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank');
+});
+document.getElementById('
