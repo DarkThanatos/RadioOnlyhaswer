@@ -82,5 +82,238 @@
 
   /* small responsive tweaks */
   @media (max-width:520px){
+    .playBtn{width:72px;height:72px;font-size:22px}
+    .volume{width:110px}
+    header.appHeader img{height:48px}
+  }
+</style>
+</head>
+<body data-theme="dark">
+  <div class="wrap">
+    <header class="appHeader">
+      <img src="onlyhaswer2.png" alt="OnlyHaswer logo" />
+      <h1>OnlyHaswer Radio — En vivo</h1>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <button id="themeToggle" class="themeToggle" title="Cambiar tema">🌗 Tema</button>
+      </div>
+    </header>
+
+    <div class="layout">
+            <div class="playerCard" id="mainPlayer">
+        <div class="playerTop">
+          <img class="logoSmall" src="onlyhaswer2.png" alt="logo">
+          <div class="metaBlock">
+            <div class="stationTitle">OnlyHaswer Radio</div>
+            <div class="stationStatus" id="stationStatus">Conectando…</div>
+
+            <div class="playBtnWrap">
+              <button id="playBtn" class="playBtn" aria-label="Play">▶</button>
+              <div>
+                <div class="playInfo" id="playLabel">Presiona para escuchar</div>
+                <div style="margin-top:6px;color:var(--muted);font-size:13px;">
+                  Stream: <span style="font-family:monospace;font-size:12px;color:#bfffc9">live.mp3</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="controlsRow">
+              <button id="muteBtn" class="controlSmall" title="Silenciar">🔈</button>
+              <input id="volRange" class="volume" type="range" min="0" max="1" step="0.01" value="0.9">
+              <div class="shareBtns">
+                <button id="shareWhats" class="shareBtn" title="Compartir por WhatsApp">WA</button>
+                <button id="shareFb" class="shareBtn" title="Compartir en Facebook">FB</button>
+                <button id="shareTw" class="shareBtn" title="Compartir en Twitter">TW</button>
+              </div>
+            </div>
+
+            <div class="visualizer" id="viz">
+              <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
+              <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
+              <div style="height:8px"></div>
+            </div>
+
+            <div class="listeners" id="listenersLine">
+              <div class="listenerDot"></div>
+              <div id="listenersCount">Oyentes: No disponible</div>
+            </div>
+
+            <a id="externalOpen" class="externalBtn" href="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" target="_blank" rel="noopener noreferrer">
+              Abrir en reproductor externo (VLC/Winamp)
+            </a>
+
+            <div class="smallNote" style="margin-top:8px;">
+              Nota: si el stream no arranca, presiona Play manualmente (políticas de autoplay del navegador).
+            </div>
+          </div>
+        </div>
+      </div>
+
+            <aside>
+        <div class="sideCard">
+          <div style="font-weight:700;color:var(--accent);">Información</div>
+          <div class="infoList">
+            <div id="metaNow">Estado: Desconectado de metadatos</div>
+            <div id="metaSong" style="margin-top:6px;color:var(--muted);font-weight:600">Now Playing: No se puede obtener (Desactivado)</div>
+            <div style="margin-top:8px;">
+              <button id="copyStream" class="controlSmall">Copiar URL del stream</button>
+            </div>
+            <div style="margin-top:10px;font-size:13px;color:var(--muted);">
+              Botones: compartir, abrir en VLC/Winamp.
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+    <audio id="hiddenAudio" crossorigin="anonymous" preload="none"
+    src="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" style="display:none"></audio>
+
+<script>
+/* CONFIG */
+const STREAM_URL = "https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691";
+
+/* ELEMENTS */
+const audio = document.getElementById('hiddenAudio');
+const playBtn = document.getElementById('playBtn');
+const playLabel = document.getElementById('playLabel');
+const stationStatus = document.getElementById('stationStatus');
+const viz = document.getElementById('viz');
+const volRange = document.getElementById('volRange');
+const muteBtn = document.getElementById('muteBtn');
+const copyBtn = document.getElementById('copyStream');
+const themeToggle = document.getElementById('themeToggle');
+
+// Elementos de metadatos que ahora tienen solo texto estático
+const listenersCount = document.getElementById('listenersCount');
+const metaSong = document.getElementById('metaSong');
+const metaNow = document.getElementById('metaNow');
+
+let audioCtx, analyser, sourceNode, rafId;
+let isPlaying = false;
+
+/* --- PLAY / PAUSE LOGIC --- */
+playBtn.addEventListener('click', async () => {
+  try {
+    if (audio.paused) {
+      await audio.play();
+      isPlaying = true;
+      playBtn.textContent = "⏸";
+      playLabel.textContent = "Reproduciendo";
+      stationStatus.textContent = "Conectado";
+      viz.style.opacity = 1;
+      startVisualizer();
+    } else {
+      audio.pause();
+      isPlaying = false;
+      playBtn.textContent = "▶";
+      playLabel.textContent = "Pausado";
+      stationStatus.textContent = "Pausado";
+      viz.style.opacity = 0.45;
+      stopVisualizer();
+    }
+  } catch (err) {
+    console.warn("Play error:", err);
+    stationStatus.textContent = "Error al reproducir (clic manual requerido)";
+  }
+});
+
+/* --- VOLUME / MUTE --- */
+audio.volume = parseFloat(volRange.value);
+volRange.addEventListener('input', (e)=> audio.volume = e.target.value);
+muteBtn.addEventListener('click', ()=> {
+  audio.muted = !audio.muted;
+  muteBtn.textContent = audio.muted ? "🔇" : "🔈";
+});
+
+/* --- COPY STREAM --- */
+copyBtn.addEventListener('click', async ()=>{
+  try {
+    await navigator.clipboard.writeText(STREAM_URL);
+    copyBtn.textContent = "Copiado ✓";
+    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+  } catch {
+    copyBtn.textContent = "Error";
+    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+  }
+});
+
+/* --- SHARE BUTTONS --- */
+const pageURL = encodeURIComponent(window.location.href);
+document.getElementById('shareWhats').addEventListener('click', ()=> {
+  const u = encodeURIComponent(STREAM_URL);
+  window.open(`https://api.whatsapp.com/send?text=Estoy escuchando OnlyHaswer Radio: ${u}`, '_blank');
+});
+document.getElementById('shareFb').addEventListener('click', ()=> {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank');
+});
+document.getElementById('shareTw').addEventListener('click', ()=> {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Escuchá OnlyHaswer Radio")}&url=${pageURL}`, '_blank');
+});
+
+/* --- THEME TOGGLE --- */
+function setTheme(t){ document.body.setAttribute('data-theme', t); localStorage.setItem('oh_theme', t); }
+themeToggle.addEventListener('click', ()=> { const cur = document.body.getAttribute('data-theme')||'dark'; setTheme(cur==='dark'?'light':'dark'); });
+(function initTheme(){ const saved = localStorage.getItem('oh_theme'); if(saved) setTheme(saved); })();
+
+/* --- VISUALIZER (WebAudio) --- */
+function startVisualizer(){
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 128;
+    sourceNode = audioCtx.createMediaElementSource(audio);
+    sourceNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    renderViz();
+  } catch(e){
+    console.warn("Visualizer not available:", e);
+  }
+}
+function stopVisualizer(){
+  if(!audioCtx) return;
+  if(rafId) cancelAnimationFrame(rafId);
+  try { analyser.disconnect(); sourceNode.disconnect(); audioCtx.close(); } catch(e){}
+  audioCtx = null; analyser = null; sourceNode = null; rafId = null;
+  const bars = viz.querySelectorAll('div'); bars.forEach(b=> b.style.height='8px');
+}
+function renderViz(){
+  if(!analyser) return;
+  const bufferLength = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufferLength);
+  const bars = viz.querySelectorAll('div');
+  function draw(){
+    rafId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    for(let i=0;i<bars.length;i++){
+      const v = data[i] || 8;
+      const h = Math.max(8, Math.min(52, Math.round((v / 255) * 52)));
+      bars[i].style.height = h + 'px';
+      bars[i].style.opacity = (0.25 + (v/255)*0.75).toString();
+    }
+  }
+  draw();
+}
+
+/* --- METADATA AND LISTENERS LOGIC DELETED --- */
+// Los campos ahora muestran texto fijo/informativo
+listenersCount.textContent = "Oyentes: No disponible";
+metaNow.textContent = "Estado: Desconectado de metadatos";
+metaSong.textContent = "Now Playing: No se puede obtener (Desactivado)";
+
+/* --- EXTERNAL OPEN --- */
+document.getElementById('externalOpen').addEventListener('click', (e) => {
+  // opens the raw stream URL in a new tab where user can choose 'open with' in system
+});
+
+/* --- small safety: stop audio when page hidden --- */
+document.addEventListener('visibilitychange', ()=> {
+  if(document.hidden && isPlaying){ audio.pause(); playBtn.textContent="▶"; playLabel.textContent="Pausado"; isPlaying=false; stopVisualizer(); }
+});
+</script>
+
+</body>
+</html>
 
 
