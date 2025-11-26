@@ -1,92 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnlyHaswer Radio</title>
-<style>
-body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial, sans-serif;text-align:center;overflow-x:hidden;}
-.bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 20%, #1f1f1f, #000);animation:bgmove 12s infinite alternate;z-index:-1;}
-@keyframes bgmove{0%{background-position:0 0}100%{background-position:100px 200px}}
-header{padding:25px;font-size:32px;font-weight:bold;background:#111;box-shadow:0 2px 20px #000;letter-spacing:1px;}
-
-.main-content {padding: 25px 15px;max-width: 950px;margin: 0 auto;}
-
-.player{
-    margin:20px auto;
-    background:#1b1b1b;
-    padding:25px;
-    border-radius:18px;
-    box-shadow:0 0 20px #000;
-}
-
-audio{
-    width:100%;
-    max-width:600px;
-    margin-top:15px;
-    border-radius:10px;
-}
-
-#status{
-    margin-top:10px;
-    font-size:14px;
-    color:#4ade80;
-}
-
-.chat-container {
-    margin-top: 40px;
-    padding: 25px;
-    background: #1b1b1b;
-    border-radius: 18px;
-    box-shadow:0 0 20px #000;
-}
-
-.chat-title {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #4ade80;
-}
-
-.social{margin-top:20px;display:flex;justify-content:center;gap:20px;}
-.social a{color:#fff;font-size:24px;text-decoration:none;}
-
-footer{margin:40px 0;color:#777;font-size:14px;}
-
-iframe {
-    border: none;
-    border-radius: 10px;
-    display: block;
-    margin: 0 auto;
-    width: 900px;
-    height: 600px;
-}
-
-@media (max-width: 960px) {
-    .main-content { max-width: 95%; }
-    .chat-container { padding: 10px; }
-    iframe { width: 100%; height: 400px; }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OnlyHaswer Radio</title>
+  <style>
+    body { margin:0; background:#0b0b0b; color:#fff; font-family:Arial, sans-serif; text-align:center; overflow-x:hidden; }
+    .bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 20% 20%, #1f1f1f, #000); animation:bgmove 12s infinite alternate; z-index:-1; }
+    @keyframes bgmove { 0% { background-position:0 0 } 100% { background-position:100px 200px } }
+    header { padding:25px; font-size:32px; font-weight:bold; background:#111; box-shadow:0 2px 20px #000; letter-spacing:1px; }
+    .main-content { padding: 25px 15px; max-width: 950px; margin: 0 auto; }
+    .player { margin:20px auto; background:#1b1b1b; padding:25px; border-radius:18px; box-shadow:0 0 20px #000; }
+    audio { width:100%; max-width:600px; margin-top:15px; border-radius:10px; }
+    #nowPlaying { margin-top:15px; font-size:18px; color:#4ade80; }
+    #listeners { margin-top:8px; font-size:14px; color:#aaa; }
+    #status { margin-top:8px; font-size:14px; color:#777; }
+    .social { margin-top:20px; display:flex; justify-content:center; gap:20px; }
+    .social a { color:#fff; font-size:24px; text-decoration:none; }
+    .chat-container { margin-top: 40px; padding: 25px; background: #1b1b1b; border-radius: 18px; box-shadow:0 0 20px #000; }
+    .chat-title { font-size: 24px; margin-bottom: 15px; color: #4ade80; }
+    iframe { border: none; border-radius: 10px; display: block; margin: 0 auto; width: 900px; height: 600px; }
+    @media (max-width: 960px) {
+      .main-content { max-width: 95%; }
+      .chat-container { padding: 10px; }
+      iframe { width: 100%; height: 400px; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="bg"></div>
-<header>📻 OnlyHaswer Radio</header>
+  <div class="bg"></div>
+  <header>📻 OnlyHaswer Radio</header>
 
-<div class="main-content">
-    
+  <div class="main-content">
+
     <div id="radio">
       <div class="player">
         <img src="onlyhaswer2.png" alt="logo" style="width:180px;margin-bottom:10px;">
-
-        <h2 style="color:#4ade80;">🎶 Disfruta la Radio en Vivo</h2>
+        <h2>🎶 En vivo ahora</h2>
 
         <audio id="radioPlayer" controls autoplay>
-          <source src="https://radioonlyhaswer.radiostream123.com/" type="audio/mpeg">
+          <source src="https://radioonlyhaswer.radiostream123.com:8000/stream" type="audio/mpeg">
           Tu navegador no soporta audio HTML5.
         </audio>
 
-        <div id="status">📡 Conectando con el servidor...</div>
+        <div id="nowPlaying">Cargando canción...</div>
+        <div id="listeners">Oyentes: —</div>
+        <div id="status">📡 Conectando al servidor...</div>
 
         <div class="social">
           <a href="#">🌐</a>
@@ -97,25 +57,5 @@ iframe {
       </div>
     </div>
 
-    <div id="chat" class="chat-container">
-      <div class="chat-title">💬 Chat en vivo</div>
-      <div>
-        <iframe src="https://xat.com/embed/chat.php#id=5&gn=OnlyHaswerRadio"
-          title="Chat Xat OnlyHaswerRadio"></iframe>
-      </div>
-    </div>
+    <div id="chat" class="chat-
 
-</div>
-
-<footer>Radio Only Haswer — GitHub Pages</footer>
-
-<script>
-// Mostrar estado del stream
-const audio = document.getElementById("radioPlayer");
-audio.addEventListener("playing", ()=> document.getElementById("status").textContent = "🔊 Reproduciendo");
-audio.addEventListener("pause", ()=> document.getElementById("status").textContent = "⏸️ Pausado");
-audio.addEventListener("error", ()=> document.getElementById("status").textContent = "❌ Error al conectar con la radio");
-</script>
-
-</body>
-</html>
