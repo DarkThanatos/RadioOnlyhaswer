@@ -222,7 +222,7 @@ function renderViz(){
   draw();
 }
 
-<script>
+
 function actualizarCancion() {
     const script = document.createElement("script");
     script.src = "http://onlyhaswerradio.ddns.net:8000/status-json.xsl?callback=metadataCallback&_=" + Date.now();
@@ -239,7 +239,7 @@ function metadataCallback(data) {
 
 setInterval(actualizarCancion, 3000);
 actualizarCancion();
-</script>
+
 
 </script>
 
