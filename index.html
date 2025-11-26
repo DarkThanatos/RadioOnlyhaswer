@@ -112,7 +112,7 @@
 
 <script>
 const STREAM_URL = "https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691";
-const METADATA_URL = "http://onlyhaswerradio.ddns.net:8000/status-json.xsl";
+
 
 const playBtn = document.getElementById('playBtn');
 const playLabel = document.getElementById('playLabel');
@@ -222,19 +222,25 @@ function renderViz(){
   draw();
 }
 
-/* FETCH METADATA */
-async function updateMetadata(){
-  try {
-    const res = await fetch(METADATA_URL, {cache:'no-store'});
-    if(!res.ok) throw new Error('no-ok');
-    const txt = await res.text();
-    metaSong.textContent = "Now Playing: " + txt.trim();
-  } catch(e){
-    metaSong.textContent = "Now Playing: —";
-  }
+<script>
+function actualizarCancion() {
+    const script = document.createElement("script");
+    script.src = "http://onlyhaswerradio.ddns.net:8000/status-json.xsl?callback=metadataCallback&_=" + Date.now();
+    document.body.appendChild(script);
 }
-updateMetadata();
-setInterval(updateMetadata, 4000);
+
+function metadataCallback(data) {
+    let titulo = "Sin información";
+    if (data.icestats && data.icestats.source && data.icestats.source.title) {
+        titulo = data.icestats.source.title;
+    }
+    document.getElementById("nowplaying").innerText = titulo;
+}
+
+setInterval(actualizarCancion, 3000);
+actualizarCancion();
+</script>
+
 </script>
 
 </body>
