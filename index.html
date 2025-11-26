@@ -5,29 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OnlyHaswer Radio</title>
 <style>
-/* Estilos para el diseño oscuro y responsive */
 body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial, sans-serif;text-align:center;overflow-x:hidden;}
 .bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 20%, #1f1f1f, #000);animation:bgmove 12s infinite alternate;z-index:-1;}
 @keyframes bgmove{0%{background-position:0 0}100%{background-position:100px 200px}}
 header{padding:25px;font-size:32px;font-weight:bold;background:#111;box-shadow:0 2px 20px #000;letter-spacing:1px;}
 
-/* Contenedor principal para centrar el contenido */
-.main-content {
-    padding: 25px 15px;
-    max-width: 950px;
-    margin: 0 auto; /* Centra el contenido en pantallas grandes */
-}
+.main-content {padding: 25px 15px;max-width: 950px;margin: 0 auto;}
 
-/* Estilo del contenedor del Player para centrar el embed */
 .player{
-    margin:20px auto; /* Centrado horizontal */
+    margin:20px auto;
     background:#1b1b1b;
     padding:25px;
     border-radius:18px;
     box-shadow:0 0 20px #000;
 }
 
-/* Estilo para el contenedor del Chat */
+audio{
+    width:100%;
+    max-width:600px;
+    margin-top:15px;
+    border-radius:10px;
+}
+
+#status{
+    margin-top:10px;
+    font-size:14px;
+    color:#4ade80;
+}
+
 .chat-container {
     margin-top: 40px;
     padding: 25px;
@@ -44,23 +49,22 @@ header{padding:25px;font-size:32px;font-weight:bold;background:#111;box-shadow:0
 
 .social{margin-top:20px;display:flex;justify-content:center;gap:20px;}
 .social a{color:#fff;font-size:24px;text-decoration:none;}
+
 footer{margin:40px 0;color:#777;font-size:14px;}
 
-/* Estilos de IFRAME */
 iframe {
     border: none;
     border-radius: 10px;
-    display: block; 
+    display: block;
     margin: 0 auto;
-    width: 900px; /* Ancho fijo para PC */
+    width: 900px;
     height: 600px;
 }
 
-/* Media Query para móvil */
 @media (max-width: 960px) {
     .main-content { max-width: 95%; }
     .chat-container { padding: 10px; }
-    iframe { width: 100%; height: 400px; } /* Ajuste en móvil */
+    iframe { width: 100%; height: 400px; }
 }
 </style>
 </head>
@@ -73,11 +77,17 @@ iframe {
     
     <div id="radio">
       <div class="player">
-        <img src="onlyhaswer2.png" alt="logo">
-        
-        <div class="cstrEmbed" data-type="newStreamPlayer" data-publicToken="38b70345-334f-4beb-aac2-b7bc389076e7" data-theme="dark" data-color="000000" data-channelId="" data-rendered="false">
-        <a href="https://www.caster.fm">Shoutcast Hosting</a> <a href="https://www.caster.fm">Stream Hosting</a> <a href="https://www.caster.fm">Radio Server Hosting</a></div>
-        <script src="//cdn.cloud.caster.fm/widgets/embed.js"></script>
+        <img src="onlyhaswer2.png" alt="logo" style="width:180px;margin-bottom:10px;">
+
+        <h2 style="color:#4ade80;">🎶 Disfruta la Radio en Vivo</h2>
+
+        <audio id="radioPlayer" controls autoplay>
+          <source src="https://radioonlyhaswer.radiostream123.com/" type="audio/mpeg">
+          Tu navegador no soporta audio HTML5.
+        </audio>
+
+        <div id="status">📡 Conectando con el servidor...</div>
+
         <div class="social">
           <a href="#">🌐</a>
           <a href="#">📘</a>
@@ -98,6 +108,14 @@ iframe {
 </div>
 
 <footer>Radio Only Haswer — GitHub Pages</footer>
+
+<script>
+// Mostrar estado del stream
+const audio = document.getElementById("radioPlayer");
+audio.addEventListener("playing", ()=> document.getElementById("status").textContent = "🔊 Reproduciendo");
+audio.addEventListener("pause", ()=> document.getElementById("status").textContent = "⏸️ Pausado");
+audio.addEventListener("error", ()=> document.getElementById("status").textContent = "❌ Error al conectar con la radio");
+</script>
 
 </body>
 </html>
