@@ -232,4 +232,138 @@ document.getElementById('shareWhats').addEventListener('click', ()=> {
 document.getElementById('shareFb').addEventListener('click', ()=> {
   window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank');
 });
-document.getElementById('
+document.getElementById('shareTw').addEventListener('click', ()=> {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Escuchá OnlyHaswer Radio")}&url=${pageURL}`, '_blank');
+});
+
+/* THEME TOGGLE */
+function setTheme(t){ document.body.setAttribute('data-theme', t); localStorage.setItem('oh_theme', t); }
+themeToggle.addEventListener('click', ()=> { const cur = document.body.getAttribute('data-theme')||'dark'; setTheme(cur==='dark'?'light':'dark'); });
+(function initTheme(){ const saved = localStorage.getItem('oh_theme'); if(saved) setTheme(saved); })();
+
+/* VISUALIZER (WebAudio) - Modificado para manejar fallas y usar audio que ya está reproduciendo */
+function startVisualizer(){
+  // Si ya está inicializado, no hacemos nada
+  if (analyser) return; 
+
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 128;
+
+    // Solo se crea el SourceNode si no existe, y si el audio ya está cargado
+    if(!sourceNode) { 
+        sourceNode = audioCtx.createMediaElementSource(audio);
+        sourceNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+    }
+    
+    renderViz();
+  } catch(e){
+    console.warn("Visualizer not available (WebAudio API error or CORS):", e);
+    // Si falla, aseguramos que el visualizador se apague visualmente
+    viz.style.opacity = 0.25; 
+  }
+}
+function stopVisualizer(){
+  if(!analyser) return;
+  if(rafId) cancelAnimationFrame(rafId);
+  
+  // Dejar Analyser y SourceNode activos si el audio sigue cargado, solo detener el dibujo
+  // try { analyser.disconnect(); sourceNode.disconnect(); audioCtx.close(); } catch(e){} // No cerrar el contexto para poder reanudar
+
+  // Limpiar la animación, pero mantener el contexto vivo si es posible
+  rafId = null; 
+  const bars = viz.querySelectorAll('div'); bars.forEach(b=> b.style.height='8px');
+}
+function renderViz(){
+  if(!analyser) return;
+  const bufferLength = analyser.frequencyBinCount;
+  const data = new Uint8Array(bufferLength);
+  const bars = viz.querySelectorAll('div');
+  function draw(){
+    rafId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    for(let i=0;i<bars.length;i++){
+      const v = data[i] || 8;
+      const h = Math.max(8, Math.min(52, Math.round((v / 255) * 52)));
+      bars[i].style.height = h + 'px';
+      bars[i].style.opacity = (0.25 + (v/255)*0.75).toString();
+    }
+  }
+  draw();
+}
+
+/* METADATA & LISTENERS (código intacto) */
+async function fetchStatusJson(){
+  try {
+    const res = await fetch(METADATA_URL, {mode:'cors'});
+    if(!res.ok) throw new Error('no-ok');
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e){
+      const jMatch = text.match(/\{[\s\S]*\}/);
+      if(jMatch) json = JSON.parse(jMatch[0]);
+    }
+    if(json && json.icestats){
+      const src = json.icestats.source;
+      let mount = src;
+      if(Array.isArray(src)){ mount = src.find(s => (s.listenurl && s.listenurl.includes('/stream')) || s.listenurl) || src[0]; }
+      const title = (mount && (mount.title || mount.song)) || null;
+      const listeners = mount && (mount.listeners || mount.currentlisteners || mount.streams);
+      if(title) metaSong.textContent = "Now Playing: " + title;
+      if(listeners !== undefined) listenersCount.textContent = "Oyentes: " + listeners;
+      metaNow.textContent = "Conectado (datos públicos)";
+      stationStatus.textContent = "Conectado";
+      return true;
+    } else { throw new Error('no-json'); }
+  } catch(err){ console.debug("fetchStatusJson failed:", err); return false; }
+}
+
+async function fetch7Html(url){
+  try {
+    const res = await fetch(url, {mode:'cors'});
+    if(!res.ok) throw new Error('no-ok');
+    const txt = await res.text();
+    let m = txt.match(/Current Song:\s*<[^>]*>([^<]+)/i) || txt.match(/Currently Playing:\s*([^<\r\n]+)/i) || txt.match(/Stream Title:\s*([^<\r\n]+)/i);
+    if(m && m[1]){
+      metaSong.textContent = "Now Playing: " + m[1].trim();
+      metaNow.textContent = "Conectado (datos públicos)";
+      return true;
+    }
+  } catch(e){ console.debug("fetch7Html failed", e); }
+  return false;
+}
+
+async function tryFetchMetadata(){
+  const ok = await fetchStatusJson();
+  if(ok) return;
+  const candidates = [
+    METADATA_URL.replace('/status-json.xsl','/status.xsl'),
+    METADATA_URL.replace('/status-json.xsl','/7.html'),
+    METADATA_URL.replace('/status-json.xsl','/status'),
+  ];
+  for(const c of candidates){ const r = await fetch7Html(c); if(r) return; }
+  metaNow.textContent = "Metadata no disponible públicamente (CORS / endpoint)";
+  listenersCount.textContent = "Oyentes: —";
+}
+
+tryFetchMetadata();
+setInterval(tryFetchMetadata, POLL_INTERVAL);
+
+metaNow.textContent = "Intentando cargar metadata…";
+metaSong.textContent = "Now Playing: —";
+
+/* EXTERNAL OPEN - tries to open stream in external player (user agent handles) */
+document.getElementById('externalOpen').addEventListener('click', (e) => {
+  // opens the raw stream URL in a new tab where user can choose 'open with' in system
+});
+
+/* small safety: stop audio when page hidden */
+document.addEventListener('visibilitychange', ()=> {
+  if(document.hidden && isPlaying){ audio.pause(); playBtn.textContent="▶"; playLabel.textContent="Pausado"; isPlaying=false; stopVisualizer(); }
+});
+</script>
+
+</body>
+</html>
