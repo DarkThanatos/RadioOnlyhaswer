@@ -1,0 +1,156 @@
+/* 🎨 COLORES Y TIPOGRAFÍA */
+:root{
+  --bg: #030303; /* Fondo muy oscuro */
+  --card: #0c0c0c; /* Contenedor sutilmente más claro */
+  --accent: #00ff66; /* Verde Neón */
+  --muted: #7f8a81; /* Gris oscuro para texto secundario */
+  --text: #e6ffe9; /* Texto principal */
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,Helvetica,sans-serif;
+  display:flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 🖼️ ESTRUCTURA Y ENCABEZADO */
+header.appHeader{
+  display:flex;
+  align-items:center;
+  padding: 20px 40px;
+  gap:15px;
+  border-bottom: 1px solid rgba(0,255,102,.05);
+}
+header.appHeader img{
+  height:48px;
+  border-radius:8px;
+  box-shadow:0 0 10px rgba(0,255,102,.2);
+}
+header.appHeader h1{
+  font-size:18px;
+  margin:0;
+  color:var(--accent);
+  font-weight:700;
+}
+
+/* 🕹️ CONTENEDOR CENTRAL DEL REPRODUCTOR */
+.mainContent{
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+.playerCard{
+  background:var(--card);
+  padding:30px;
+  border-radius:20px;
+  width: 100%;
+  max-width:450px;
+  box-shadow:0 15px 50px rgba(0,0,0,.8), 0 0 0 1px rgba(0,255,102,.1);
+  text-align:center;
+}
+
+.logoLarge{
+  width:120px;
+  height:120px;
+  border-radius:16px;
+  object-fit:cover;
+  box-shadow:0 10px 40px rgba(0,255,102,.2);
+  margin-bottom: 25px;
+}
+
+/* 🎼 METADATA Y ESTADO */
+.statusBlock{
+  margin-bottom: 25px;
+}
+.stationTitle{
+  color:var(--accent);
+  font-weight:700;
+  font-size:24px;
+  margin:0 0 5px 0;
+}
+.metaSong{
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.stationStatus{
+  font-size:14px;
+  color:var(--muted);
+}
+
+/* ▶️ BOTÓN DE REPRODUCCIÓN */
+.playBtn{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  border:none;
+  background:linear-gradient(180deg,#00ff66,#00dd55);
+  color:#000;
+  font-size:30px;
+  box-shadow:0 8px 30px rgba(0,255,102,.3), inset 0 -6px 20px rgba(0,0,0,.15);
+  cursor:pointer;
+  transition: transform 0.2s;
+}
+.playBtn:active{
+  transform: scale(0.95);
+}
+
+/* 🎚️ CONTROLES Y LINKS */
+.controlsRow{
+  display:flex;
+  gap:15px;
+  align-items:center;
+  margin-top:25px;
+  flex-wrap:wrap;
+  justify-content: center;
+}
+.controlSmall{
+  background:transparent;
+  border:1px solid rgba(0,255,102,.2);
+  color:var(--accent);
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:14px;
+  text-decoration: none;
+}
+.controlSmall:hover{
+  background: rgba(0,255,102,.05);
+}
+.volume{width:150px;}
+
+/* 📢 Visualizador (Oculto en este diseño simple) */
+.visualizer{ display: none; } 
+.listeners{
+  font-size:13px;
+  color:var(--muted);
+  margin-top: 20px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content: center;
+}
+.listenerDot{
+  width:9px;
+  height:9px;
+  background:var(--accent);
+  border-radius:50%;
+  box-shadow:0 0 8px rgba(0,255,102,.4);
+}
+
+/* 📱 Responsive */
+@media (max-width:500px){
+  header.appHeader{ padding: 15px 20px; justify-content: center; }
+  header.appHeader h1{ display: none; } /* Ocultar el título en móviles */
+  .playerCard{ padding: 25px 15px; }
+  .stationTitle{ font-size: 20px; }
+  .controlsRow{ flex-direction: column; gap: 10px; }
+  .volume{ width: 100%; }
+}
