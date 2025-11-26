@@ -38,6 +38,12 @@ header.appHeader h1{font-size:20px;margin:0;color:var(--accent);font-weight:700;
 .visualizer{display:flex;gap:6px;align-items:flex-end;height:52px;margin-top:18px;}
 .visualizer div{width:6px;background:var(--accent);border-radius:4px;opacity:.25;transform-origin:bottom;transition:height .06s linear;}
 
+/* External / copy / share buttons */
+.externalBtn, .shareBtn{background:transparent;border:1px solid rgba(0,255,102,.12);padding:6px 8px;border-radius:8px;color:var(--accent);cursor:pointer;font-size:14px;}
+
+.externalBtn{display:inline-block;margin-top:10px;text-decoration:none;}
+.shareBtns{display:flex;gap:8px;margin-left:auto;}
+
 /* small responsive tweaks */
 @media(max-width:520px){.playBtn{width:72px;height:72px;font-size:22px}.volume{width:110px}header.appHeader img{height:48px}}
 </style>
@@ -68,6 +74,11 @@ header.appHeader h1{font-size:20px;margin:0;color:var(--accent);font-weight:700;
           <div class="controlsRow">
             <button id="muteBtn" class="controlSmall">🔈</button>
             <input id="volRange" class="volume" type="range" min="0" max="1" step="0.01" value="0.9">
+            <div class="shareBtns">
+              <button id="shareWhats" class="shareBtn" title="Compartir por WhatsApp">WA</button>
+              <button id="shareFb" class="shareBtn" title="Compartir en Facebook">FB</button>
+              <button id="shareTw" class="shareBtn" title="Compartir en Twitter">TW</button>
+            </div>
           </div>
 
           <div class="visualizer" id="viz">
@@ -75,6 +86,19 @@ header.appHeader h1{font-size:20px;margin:0;color:var(--accent);font-weight:700;
             <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
             <div style="height:8px"></div>
           </div>
+
+          <a id="externalOpen" class="externalBtn" href="https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691" target="_blank" rel="noopener noreferrer">
+            Abrir en reproductor externo (VLC/Winamp)
+          </a>
+
+          <div class="smallNote" style="margin-top:8px;">
+            Nota: si el stream no arranca, presiona Play manualmente (políticas de autoplay del navegador).
+          </div>
+
+          <div style="margin-top:10px;">
+            <button id="copyStream" class="controlSmall">Copiar URL del stream</button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -121,15 +145,42 @@ playBtn.addEventListener('click', () => {
 });
 
 volRange.addEventListener('input', e => player.volume(e.target.value));
+
 muteBtn.addEventListener('click', () => {
   player.mute(!player._muted);
   muteBtn.textContent = player._muted ? "🔇" : "🔈";
 });
 
+/* SHARE BUTTONS */
+const pageURL = encodeURIComponent(window.location.href);
+document.getElementById('shareWhats').addEventListener('click', ()=> {
+  window.open(`https://api.whatsapp.com/send?text=Estoy escuchando OnlyHaswer Radio: ${encodeURIComponent(STREAM_URL)}`, '_blank');
+});
+document.getElementById('shareFb').addEventListener('click', ()=> {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageURL}`, '_blank');
+});
+document.getElementById('shareTw').addEventListener('click', ()=> {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("Escuchá OnlyHaswer Radio")}&url=${pageURL}`, '_blank');
+});
+
+/* COPY STREAM */
+document.getElementById('copyStream').addEventListener('click', async ()=> {
+  try {
+    await navigator.clipboard.writeText(STREAM_URL);
+    const btn = document.getElementById('copyStream');
+    btn.textContent = "Copiado ✓";
+    setTimeout(()=> btn.textContent="Copiar URL del stream", 1600);
+  } catch {
+    const btn = document.getElementById('copyStream');
+    btn.textContent = "Error";
+    setTimeout(()=> btn.textContent="Copiar URL del stream", 1600);
+  }
+});
+
 /* VISUALIZER */
 function startVisualizer(){
-  if (audioCtx) return;
-  try {
+  if(audioCtx) return;
+  try{
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 128;
@@ -137,14 +188,14 @@ function startVisualizer(){
     sourceNode.connect(analyser);
     analyser.connect(audioCtx.destination);
     renderViz();
-  } catch(e){ console.warn("Visualizer no disponible:", e); }
+  }catch(e){ console.warn("Visualizer no disponible:", e);}
 }
 
 function stopVisualizer(){
   if(!audioCtx) return;
   if(rafId) cancelAnimationFrame(rafId);
-  try { analyser.disconnect(); sourceNode.disconnect(); audioCtx.close(); } catch(e){}
-  audioCtx = null; analyser = null; sourceNode = null; rafId = null;
+  try{ analyser.disconnect(); sourceNode.disconnect(); audioCtx.close(); }catch(e){}
+  audioCtx=null; analyser=null; sourceNode=null; rafId=null;
   viz.querySelectorAll('div').forEach(b=>b.style.height='8px');
 }
 
@@ -158,13 +209,19 @@ function renderViz(){
     analyser.getByteFrequencyData(data);
     for(let i=0;i<bars.length;i++){
       const v = data[i] || 8;
-      const h = Math.max(8, Math.min(52, Math.round((v / 255) * 52)));
+      const h = Math.max(8, Math.min(52, Math.round((v/255)*52)));
       bars[i].style.height = h+'px';
       bars[i].style.opacity = (0.25+(v/255)*0.75).toString();
     }
   }
   draw();
 }
+
+/* THEME TOGGLE */
+const themeToggle = document.getElementById('themeToggle');
+function setTheme(t){document.body.setAttribute('data-theme',t);localStorage.setItem('oh_theme',t);}
+themeToggle.addEventListener('click',()=>{const cur=document.body.getAttribute('data-theme')||'dark';setTheme(cur==='dark'?'light':'dark');});
+(function initTheme(){const saved=localStorage.getItem('oh_theme');if(saved)setTheme(saved);})();
 </script>
 </body>
 </html>
