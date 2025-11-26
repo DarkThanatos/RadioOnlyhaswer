@@ -219,10 +219,10 @@ copyBtn.addEventListener('click', async ()=>{
   try {
     await navigator.clipboard.writeText(STREAM_URL);
     copyBtn.textContent = "Copiado ✓";
-    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+    setTimeout(()=> copyBtn.textContent = "https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691", 1600);
   } catch {
     copyBtn.textContent = "Error";
-    setTimeout(()=> copyBtn.textContent = "Copiar URL del stream", 1600);
+    setTimeout(()=> copyBtn.textContent = "https://uk26freenew.listen2myradio.com/live.mp3?typeportmount=ice_5838_stream_53056691", 1600);
   }
 });
 
