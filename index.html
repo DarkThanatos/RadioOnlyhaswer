@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>OnlyHaswer Radio — Player Pro</title>
 <style>
-  /* Variables de color - Aseguramos los valores oscuros por defecto */
+  /* Variables de color - Se asegura el fondo oscuro por defecto */
   :root{
     --bg:#060606; 
     --card:#0e0e0e; 
@@ -13,7 +13,7 @@
     --muted:#9aa79a; 
     --text:#e6ffe9;
   }
-  /* Tema claro (segun tu codigo) */
+  /* Tema claro */
   [data-theme="light"]{ 
     --bg:#f6f7f8; 
     --card:#ffffff; 
@@ -25,7 +25,7 @@
   *{box-sizing:border-box}
   body{
     margin:0;
-    background:var(--bg); /* Usa el fondo oscuro */
+    background:var(--bg); /* Fondo oscuro */
     color:var(--text);
     font-family:Inter,Arial,Helvetica,sans-serif;
     display:flex;
@@ -67,7 +67,7 @@
   .visualizer{display:flex;gap:6px;align-items:flex-end;height:52px;margin-top:18px;}
   .visualizer div{width:6px;background:var(--accent);border-radius:4px;opacity:.25;transform-origin:bottom;transition:height .06s linear;}
 
-  /* listeners - Mantenemos el estilo, pero la lógica de conteo es eliminada del JS */
+  /* listeners */
   .listeners{margin-top:12px;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center;}
   .listenerDot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px rgba(0,255,102,.25);}
 
@@ -153,7 +153,7 @@
           <div style="font-weight:700;color:var(--accent);">Información</div>
           <div class="infoList">
             <div id="metaNow">Estado: Desconectado de metadatos</div>
-            <div id="metaSong" style="margin-top:6px;color:var(--muted);font-weight:600">Now Playing: No se puede obtener (Desactivado)</div>
+            <div id="metaSong" style="margin-top:6px;color:var(--muted);font-weight:600">Now Playing: No se puede obtener</div>
             <div style="margin-top:8px;">
               <button id="copyStream" class="controlSmall">Copiar URL del stream</button>
             </div>
@@ -184,7 +184,7 @@ const muteBtn = document.getElementById('muteBtn');
 const copyBtn = document.getElementById('copyStream');
 const themeToggle = document.getElementById('themeToggle');
 
-// Elementos de metadatos que ahora tienen solo texto estático
+// Elementos de metadatos (ahora estáticos)
 const listenersCount = document.getElementById('listenersCount');
 const metaSong = document.getElementById('metaSong');
 const metaNow = document.getElementById('metaNow');
@@ -297,10 +297,11 @@ function renderViz(){
 }
 
 /* --- METADATA AND LISTENERS LOGIC DELETED --- */
-// Los campos ahora muestran texto fijo/informativo
-listenersCount.textContent = "Oyentes: No disponible";
-metaNow.textContent = "Estado: Desconectado de metadatos";
-metaSong.textContent = "Now Playing: No se puede obtener (Desactivado)";
+// Establece mensajes estáticos
+if(listenersCount) listenersCount.textContent = "Oyentes: No disponible";
+if(metaNow) metaNow.textContent = "Estado: Desconectado de metadatos";
+if(metaSong) metaSong.textContent = "Now Playing: No se puede obtener";
+
 
 /* --- EXTERNAL OPEN --- */
 document.getElementById('externalOpen').addEventListener('click', (e) => {
@@ -315,5 +316,4 @@ document.addEventListener('visibilitychange', ()=> {
 
 </body>
 </html>
-
 
