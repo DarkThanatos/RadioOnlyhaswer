@@ -225,8 +225,9 @@ function renderViz(){
   /* === METADATA & LISTENERS === */
 async function fetchStatus() {
   try {
-    const proxyUrl = "https://api.allorigins.win/get?url=" +
-      encodeURIComponent("https://sonic.nnw.cl/8060/status-json.xsl");
+    const proxyUrl = "https://corsproxy.io/?" + 
+  encodeURIComponent("https://sonic.nnw.cl/8060/status-json.xsl") +
+  "&t=" + Date.now();
 
     const res = await fetch(proxyUrl);
     const proxyData = await res.json();
