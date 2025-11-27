@@ -7,8 +7,12 @@
 <style>
   :root{
     --bg:#060606; --card:#0e0e0e; --accent:#00ff66; --muted:#9aa79a; --text:#e6ffe9;
+    --online:#00ff66; --offline:#ff3f3f;
   }
-  [data-theme="light"]{ --bg:#f6f7f8; --card:#ffffff; --accent:#008f3a; --muted:#556; --text:#111; }
+  [data-theme="light"]{ 
+    --bg:#f6f7f8; --card:#ffffff; --accent:#008f3a; --muted:#556; --text:#111; 
+    --online:#008f3a; --offline:#cc0000;
+  }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif;display:flex;justify-content:center;padding:28px;}
   .wrap{width:100%;max-width:1100px;}
@@ -18,92 +22,49 @@
   .layout{display:grid;grid-template-columns:1fr 320px;gap:20px;}
   @media (max-width:980px){ .layout{grid-template-columns:1fr;} header.appHeader{justify-content:center;} }
 
-  /* PLAYER CARD */
   .playerCard{background:var(--card);padding:20px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);border:1px solid rgba(0,255,102,.06);}
   .playerTop{display:flex;gap:14px;align-items:center;}
   .logoSmall{width:92px;height:92px;border-radius:12px;object-fit:cover;box-shadow:0 8px 30px rgba(0,255,102,.05);}
   .metaBlock{flex:1;text-align:left;}
   .stationTitle{color:var(--accent);font-weight:700;font-size:18px;margin-bottom:6px;}
-  .stationStatus{font-size:13px;color:var(--muted);}
-  .playBtnWrap{display:flex;align-items:center;gap:14px;margin-top:12px;}
-  .playBtn{
-    width:86px;height:86px;border-radius:50%;border:none;background:linear-gradient(180deg,#00ff66,#00dd55);color:#000;font-size:26px;
-    box-shadow:0 8px 30px rgba(0,255,102,.18), inset 0 -6px 20px rgba(0,0,0,.12);cursor:pointer;
-  }
-  .playInfo{font-size:14px;color:var(--muted);}
-  .controlsRow{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;}
-  .controlSmall{background:transparent;border:1px solid rgba(0,255,102,.12);color:var(--accent);padding:8px 10px;border-radius:8px;cursor:pointer;}
-  .volume{width:150px;}
-  .visualizer{
-    display:flex;
-    gap:6px;
-    align-items:flex-end;
-    height:52px;
-    margin-top:18px;
-    display: none; 
-  }
-  .visualizer.active{display:flex;}
-  .visualizer div{width:6px;background:var(--accent);border-radius:4px;opacity:.25;transform-origin:bottom;transition:height .06s linear;}
-  .listeners{margin-top:12px;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center;}
-  .listenerDot{width:9px;height:9px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px rgba(0,255,102,.25);}
-  .smallNote{font-size:12px;color:var(--muted);margin-top:10px;}
-  .themeToggle{border:1px solid rgba(0,255,102,.08);padding:6px 8px;border-radius:8px;cursor:pointer;color:var(--accent);background:transparent;}
-  @media (max-width:520px){
-    .playBtn{width:72px;height:72px;font-size:22px}
-    .volume{width:110px}
-    header.appHeader img{height:48px}
-  }
+  .stationStatus{font-size:14px;font-weight:600;margin-bottom:8px;}
+  .infoLine{font-size:14px;color:var(--muted);line-height:1.4;margin-bottom:4px;}
+  .infoLine span.statusOnline{color:var(--online); font-weight:700;}
+  .infoLine span.statusOffline{color:var(--offline); font-weight:700;}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 </head>
 <body data-theme="dark">
 <div class="wrap">
   <header class="appHeader">
     <img src="onlyhaswer2.png" alt="OnlyHaswer logo" />
     <h1>OnlyHaswer Radio — En vivo</h1>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-      <button id="themeToggle" class="themeToggle" title="Cambiar tema">🌗 Tema</button>
-    </div>
   </header>
 
   <div class="layout">
     <div class="playerCard" id="mainPlayer">
       <div class="playerTop">
         <img class="logoSmall" src="dino.gif" alt="logo">
+
         <div class="metaBlock">
           <div class="stationTitle">OnlyHaswer Radio</div>
-          <div class="stationStatus" id="stationStatus">🎧 Conectando al stream…</div>
+          <div class="stationStatus" id="streamStatus">Offline</div>
 
-          <div class="playBtnWrap">
-            <button id="playBtn" class="playBtn" aria-label="Play">▶</button>
-            <div>
-              <div class="playInfo" id="playLabel">Presiona para escuchar</div>
-              <div style="margin-top:6px;color:var(--muted);font-size:13px;">
-               <span style="font-family:monospace;font-size:12px">📡 Transmitiendo desde OnlyHaswer Radio</span>
-              </div>
-            </div>
+          <!-- Información adicional -->
+          <div class="infoLine">👥 Oyentes: <span id="listeners">-</span></div>
+          <div class="infoLine">⚡ Bitrate: <span id="bitrate">-</span></div>
+          <div class="infoLine">🎵 Formato: <span id="format">-</span></div>
+
+          <!-- iFrame del reproductor -->
+          <div style="margin-top:12px; width:100%;">
+            <iframe 
+              src="http://49.12.9.173/cp/widgets/player/single/?p=8060"
+              height="110"
+              width="100%"
+              scrolling="no"
+              style="border:none;border-radius:10px;overflow:hidden;"
+            ></iframe>
           </div>
 
-          <div class="controlsRow">
-            <button id="muteBtn" class="controlSmall" title="Silenciar">🔈</button>
-            <input id="volRange" class="volume" type="range" min="0" max="1" step="0.01" value="0.9">
-          </div>
-
-          <div class="visualizer" id="viz">
-            <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
-            <div style="height:8px"></div><div style="height:8px"></div><div style="height:8px"></div>
-            <div style="height:8px"></div>
-          </div>
-
-          <div class="listeners" id="listenersLine">
-            <div class="listenerDot"></div>
-            <div id="listenersCount">Status: Online </div>
-          </div>
-
-          <div class="smallNote" style="margin-top:8px;">
-          
-          </div>
-          <div id="metaSong" style="margin-top:6px;color:var(--muted);font-weight:600">Estás Escuchando OnlyHaswer Radio</div>
         </div>
       </div>
     </div>
@@ -111,150 +72,50 @@
 </div>
 
 <script>
-const STREAM_URL = "https://sonic.nnw.cl/8060/stream";
-
-
-const playBtn = document.getElementById('playBtn');
-const playLabel = document.getElementById('playLabel');
-const stationStatus = document.getElementById('stationStatus');
-const listenersCount = document.getElementById('listenersCount');
-const viz = document.getElementById('viz');
-const volRange = document.getElementById('volRange');
-const muteBtn = document.getElementById('muteBtn');
-const metaSong = document.getElementById('metaSong');
-const themeToggle = document.getElementById('themeToggle');
-
-let isPlaying = false;
-
-const sound = new Howl({
-  src: [STREAM_URL],
-  html5: true,
-  volume: parseFloat(volRange.value),
-  preload: false,
-  format: ['mp3'],
-  onplay: () => {
-    isPlaying = true;
-    playBtn.textContent = "⏸";
-    playLabel.textContent = "Reproduciendo";
-    stationStatus.textContent = "Conectado";
-    viz.classList.add('active'); 
-    startVisualizer();
-  },
-  onpause: () => {
-    isPlaying = false;
-    playBtn.textContent = "▶";
-    playLabel.textContent = "Pausado";
-    stationStatus.textContent = "Pausado";
-    viz.classList.remove('active'); 
-    stopVisualizer();
-  }
-});
-
-playBtn.addEventListener('click', () => {
-  if (sound.playing()) {
-    sound.pause();
-  } else {
-    if(sound.state() !== 'loaded') {
-        sound.load();
-        sound.once('load', () => sound.play());
-    } else {
-        sound.play();
-    }
-  }
-});
-
-volRange.addEventListener('input', (e)=> sound.volume(e.target.value));
-muteBtn.addEventListener('click', ()=> {
-  sound.mute(!sound.mute());
-  muteBtn.textContent = sound.mute() ? "🔇" : "🔈";
-});
-
-function setTheme(t){ document.body.setAttribute('data-theme', t); localStorage.setItem('oh_theme', t); }
-themeToggle.addEventListener('click', ()=> { const cur = document.body.getAttribute('data-theme')||'dark'; setTheme(cur==='dark'?'light':'dark'); });
-(function initTheme(){ const saved = localStorage.getItem('oh_theme'); if(saved) setTheme(saved); })();
-
-let audioCtx, analyser, sourceNode, rafId;
-
-function getHowlerAudioElement() {
-    const hAudio = sound._webAudio ? sound._sounds[0]._node : null;
-    return hAudio ? hAudio.mediaElement : null;
-}
-
-function startVisualizer(){
-    const nativeAudio = getHowlerAudioElement();
-    if (!nativeAudio || analyser) return; 
-    try {
-        if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        else if (audioCtx.state === 'suspended') audioCtx.resume();
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 128;
-        if(!sourceNode) { 
-            sourceNode = audioCtx.createMediaElementSource(nativeAudio);
-            sourceNode.connect(analyser);
-            analyser.connect(audioCtx.destination);
-        }
-        renderViz();
-    } catch(e){ viz.classList.remove('active'); }
-}
-
-function stopVisualizer(){
-  if(!analyser) return;
-  if(rafId) cancelAnimationFrame(rafId);
-  rafId = null; 
-  const bars = viz.querySelectorAll('div'); bars.forEach(b=> b.style.height='8px');
-}
-
-function renderViz(){
-  if(!analyser || !isPlaying) return;
-  const bufferLength = analyser.frequencyBinCount;
-  const data = new Uint8Array(bufferLength);
-  const bars = viz.querySelectorAll('div');
-  function draw(){
-    rafId = requestAnimationFrame(draw);
-    analyser.getByteFrequencyData(data);
-    for(let i=0;i<bars.length;i++){
-      const v = data[i] || 8;
-      const h = Math.max(8, Math.min(52, Math.round((v / 255) * 52)));
-      bars[i].style.height = h + 'px';
-      bars[i].style.opacity = (0.25 + (v/255)*0.75).toString();
-    }
-  }
-  draw();
-}
-
-  /* === METADATA & LISTENERS === */
+// === METADATA & STATUS ===
 async function fetchStatus() {
+  const url = `https://sonic.nnw.cl/8060/status-json.xsl?nocache=${Date.now()}`;
+
   try {
-    const proxyUrl = "https://corsproxy.io/?" + 
-  encodeURIComponent("https://sonic.nnw.cl/8060/status-json.xsl") +
-  "&t=" + Date.now();
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("No se pudo obtener status");
 
-    const res = await fetch(proxyUrl);
-    const proxyData = await res.json();
-    const data = JSON.parse(proxyData.contents);
-
+    const data = await res.json();
     const source = data?.icestats?.source;
-    if (!source) return;
 
-    stationStatus.textContent = "🚀 Señal activa";
-    metaSong.textContent = source.title ? `Now Playing 🎶: ${source.title}` : "Sin título";
-    listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
+    const src = Array.isArray(source) ? source[0] : source;
 
-     } catch (err) {
-    stationStatus.textContent = "Esperando señal…";
-    metaSong.textContent = "⏳ Cargando metadata…";
-    listenersCount.textContent = "👥 Oyentes: -";
-    console.log("❌ Error Metadata:", err);
+    if (src) {
+      document.getElementById("streamStatus").innerHTML = 'Online';
+      document.getElementById("streamStatus").className = 'statusOnline';
+      document.getElementById("listeners").innerText = src.listeners || "-";
+      document.getElementById("bitrate").innerText = src.bitrate ? src.bitrate + " kbps" : "-";
+      document.getElementById("format").innerText = src.server_type || "-";
+    } else {
+      document.getElementById("streamStatus").innerHTML = 'Offline';
+      document.getElementById("streamStatus").className = 'statusOffline';
+      document.getElementById("listeners").innerText = "-";
+      document.getElementById("bitrate").innerText = "-";
+      document.getElementById("format").innerText = "-";
+    }
+
+  } catch (err) {
+    console.warn("Error al obtener status:", err);
+    document.getElementById("streamStatus").innerHTML = 'Offline';
+    document.getElementById("streamStatus").className = 'statusOffline';
+    document.getElementById("listeners").innerText = "-";
+    document.getElementById("bitrate").innerText = "-";
+    document.getElementById("format").innerText = "-";
   }
 }
 
-setInterval(fetchStatus, 4000);
+// Actualiza cada 5 segundos
+setInterval(fetchStatus, 5000);
 fetchStatus();
 </script>
-
-  
 </body>
 </html>
+
 
 
 
