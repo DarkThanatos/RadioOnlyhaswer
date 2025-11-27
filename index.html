@@ -236,7 +236,7 @@ async function fetchStatus() {
     if (!source) return;
 
     stationStatus.textContent = "Online";
-    metaSong.textContent = source.title ? `🎶 ${source.title}` : "Sin título";
+    metaSong.textContent = source.title ? `Now Playing 🎶: ${source.title}` : "Sin título";
     listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
 
   } catch (err) {
