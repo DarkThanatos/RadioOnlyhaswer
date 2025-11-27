@@ -225,31 +225,25 @@ function renderViz(){
   /* === METADATA & LISTENERS === */
 async function fetchStatus() {
   try {
-    const res = await fetch("https://sonic.nnw.cl/8060/status-json.xsl", {
-      method: "GET",
-      headers: { "Cache-Control": "no-cache" }
-    });
-    const data = await res.json();
+    const proxyUrl = "https://api.allorigins.win/get?url=" +
+      encodeURIComponent("https://sonic.nnw.cl/8060/status-json.xsl");
+
+    const res = await fetch(proxyUrl);
+    const proxyData = await res.json();
+    const data = JSON.parse(proxyData.contents);
 
     const source = data?.icestats?.source;
     if (!source) return;
 
-    // Estado conectado
     stationStatus.textContent = "Online";
-
-    // Canción actual
-    if (source.title) {
-      metaSong.textContent = "🎶 " + source.title;
-    }
-
-    // Oyentes conectados
-    if (source.listeners !== undefined) {
-      listenersCount.textContent = `👥 Oyentes: ${source.listeners}`;
-    }
+    metaSong.textContent = source.title ? `🎶 ${source.title}` : "Sin título";
+    listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
 
   } catch (err) {
-    metaSong.textContent = "Esperando señal…";
+    stationStatus.textContent = "Esperando señal…";
+    metaSong.textContent = "⏳ Cargando metadata…";
     listenersCount.textContent = "👥 Oyentes: -";
+    console.log("❌ Error Metadata:", err);
   }
 }
 
