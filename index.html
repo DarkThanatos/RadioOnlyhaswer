@@ -221,6 +221,41 @@ function renderViz(){
   }
   draw();
 }
+
+  /* === METADATA & LISTENERS === */
+async function fetchStatus() {
+  try {
+    const res = await fetch("https://sonic.nnw.cl/8060/status-json.xsl", {
+      method: "GET",
+      headers: { "Cache-Control": "no-cache" }
+    });
+    const data = await res.json();
+
+    const source = data?.icestats?.source;
+    if (!source) return;
+
+    // Estado conectado
+    stationStatus.textContent = "Online";
+
+    // Canción actual
+    if (source.title) {
+      metaSong.textContent = "🎶 " + source.title;
+    }
+
+    // Oyentes conectados
+    if (source.listeners !== undefined) {
+      listenersCount.textContent = `👥 Oyentes: ${source.listeners}`;
+    }
+
+  } catch (err) {
+    stationStatus.textContent = "Sin conexión";
+    metaSong.textContent = "Esperando señal…";
+    listenersCount.textContent = "👥 Oyentes: -";
+  }
+}
+
+setInterval(fetchStatus, 4000);
+fetchStatus();
 </script>
 
   
