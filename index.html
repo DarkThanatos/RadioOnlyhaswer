@@ -23,12 +23,11 @@
   @media (max-width:980px){ .layout{grid-template-columns:1fr;} header.appHeader{justify-content:center;} }
 
   .playerCard{background:var(--card);padding:20px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);border:1px solid rgba(0,255,102,.06);}
-  .playerTop{display:flex;gap:14px;align-items:center;}
+  .playerTop{display:flex;gap:14px;align-items:flex-start;flex-direction:column;}
   .logoSmall{width:92px;height:92px;border-radius:12px;object-fit:cover;box-shadow:0 8px 30px rgba(0,255,102,.05);}
-  .metaBlock{flex:1;text-align:left;}
+  .metaBlock{flex:1;text-align:left;width:100%;}
   .stationTitle{color:var(--accent);font-weight:700;font-size:18px;margin-bottom:6px;}
-  .stationStatus{font-size:14px;font-weight:600;margin-bottom:8px;}
-  .infoLine{font-size:14px;color:var(--muted);line-height:1.4;margin-bottom:4px;}
+  .infoLine{font-size:14px;color:var(--muted);line-height:1.4;margin-top:4px;}
   .infoLine span.statusOnline{color:var(--online); font-weight:700;}
   .infoLine span.statusOffline{color:var(--offline); font-weight:700;}
 </style>
@@ -47,14 +46,8 @@
 
         <div class="metaBlock">
           <div class="stationTitle">OnlyHaswer Radio</div>
-          <div class="stationStatus" id="streamStatus">Offline</div>
 
-          <!-- Información adicional -->
-          <div class="infoLine">👥 Oyentes: <span id="listeners">-</span></div>
-          <div class="infoLine">⚡ Bitrate: <span id="bitrate">-</span></div>
-          <div class="infoLine">🎵 Formato: <span id="format">-</span></div>
-
-          <!-- iFrame del reproductor -->
+          <!-- 🔥 Reproductor iFrame -->
           <div style="margin-top:12px; width:100%;">
             <iframe 
               src="http://49.12.9.173/cp/widgets/player/single/?p=8060"
@@ -63,6 +56,14 @@
               scrolling="no"
               style="border:none;border-radius:10px;overflow:hidden;"
             ></iframe>
+          </div>
+
+          <!-- Información del stream debajo del reproductor -->
+          <div style="margin-top:12px;">
+            <div class="infoLine">Estado: <span id="streamStatus" class="statusOffline">Offline</span></div>
+            <div class="infoLine">👥 Oyentes: <span id="listeners">-</span></div>
+            <div class="infoLine">⚡ Bitrate: <span id="bitrate">-</span></div>
+            <div class="infoLine">🎵 Formato: <span id="format">-</span></div>
           </div>
 
         </div>
