@@ -79,7 +79,7 @@
             <div>
               <div class="playInfo" id="playLabel">Presiona para escuchar</div>
               <div style="margin-top:6px;color:var(--muted);font-size:13px;">
-               <span style="font-family:monospace;font-size:12px">En Vivo!</span>
+               <span style="font-family:monospace;font-size:12px">📡 Transmitiendo desde OnlyHaswer Radio</span>
               </div>
             </div>
           </div>
@@ -235,7 +235,7 @@ async function fetchStatus() {
     const source = data?.icestats?.source;
     if (!source) return;
 
-    stationStatus.textContent = "Online";
+    stationStatus.textContent = "🚀 Señal activa";
     metaSong.textContent = source.title ? `Now Playing 🎶: ${source.title}` : "Sin título";
     listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
 
