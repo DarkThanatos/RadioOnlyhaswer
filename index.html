@@ -238,11 +238,13 @@ async function fetchStatus() {
     stationStatus.textContent = "🚀 Señal activa";
     metaSong.textContent = source.title ? `Now Playing 🎶: ${source.title}` : "Sin título";
     listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
-/ Solo actualiza si hay cambio real
+
+       // ➜ Solo actualizamos si hay cambio real
     if (currentMetadata !== lastMetadata) {
       lastMetadata = currentMetadata;
-      document.getElementById("metadata").textContent = currentMetadata;
-      
+      metaSong.textContent = `🎶 ${currentMetadata}`;
+      console.log("🔄 Metadata actualizada:", currentMetadata);
+    }
   } catch (err) {
     stationStatus.textContent = "Esperando señal…";
     metaSong.textContent = "⏳ Cargando metadata…";
