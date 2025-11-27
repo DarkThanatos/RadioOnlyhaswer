@@ -223,33 +223,52 @@ function renderViz(){
 }
 
   /* === METADATA & LISTENERS === */
-async function fetchStatus() {
+const streamUrl = "https://sonic.nnw.cl/8060/stream";
+const metaSong = document.getElementById("metaSong");
+const listenersCount = document.getElementById("listenersCount");
+
+// === Obtener ICY metadata de la canción ===
+async function updateSong() {
   try {
-    const proxyUrl = "https://corsproxy.io/?" + 
-  encodeURIComponent("https://sonic.nnw.cl/8060/status-json.xsl") +
-  "&t=" + Date.now();
+    const res = await fetch(streamUrl, {
+      method: "GET",
+      headers: {
+        "Icy-MetaData": "1"
+      }
+    });
 
-    const res = await fetch(proxyUrl);
-    const proxyData = await res.json();
-    const data = JSON.parse(proxyData.contents);
+    const reader = res.body.getReader();
+    const { value } = await reader.read();
+    const text = new TextDecoder().decode(value);
 
-    const source = data?.icestats?.source;
-    if (!source) return;
-
-    stationStatus.textContent = "🚀 Señal activa";
-    metaSong.textContent = source.title ? `Now Playing 🎶: ${source.title}` : "Sin título";
-    listenersCount.textContent = `👥 Oyentes: ${source.listeners ?? "-"}`;
-
-     } catch (err) {
-    stationStatus.textContent = "Esperando señal…";
-    metaSong.textContent = "⏳ Cargando metadata…";
-    listenersCount.textContent = "👥 Oyentes: -";
-    console.log("❌ Error Metadata:", err);
+    const match = text.match(/StreamTitle='([^']+)'/);
+    if (match && match[1]) {
+      metaSong.textContent = "🎶 " + match[1];
+    }
+    reader.cancel();
+  } catch (e) {
+    console.log("Error metadata:", e);
   }
 }
 
-setInterval(fetchStatus, 4000);
-fetchStatus();
+// === Obtener oyentes ===
+async function updateListeners() {
+  try {
+    const res = await fetch(streamUrl, { method: "HEAD" });
+    const listeners = res.headers.get("Icecast-Listeners");
+    listenersCount.textContent = `👥 Oyentes: ${listeners ?? "-"}`;
+  } catch (e) {
+    console.log("Error oyentes:", e);
+  }
+}
+
+setInterval(() => {
+  updateSong();
+  updateListeners();
+}, 5000);
+
+updateSong();
+updateListeners();
 </script>
 
   
